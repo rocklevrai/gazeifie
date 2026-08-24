@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>pocketnix</title>
+
+<!-- homescreen / PWA bits -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="pocketnix">
+<meta name="theme-color" content="#17141d">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2317141d'/%3E%3Ctext x='24' y='108' font-family='monospace' font-size='64' font-weight='700' fill='%23f2a25c'%3E~%24%3C/text%3E%3C/svg%3E">
+
+<style>
+  :root{
+    --void:#0e0c12;
+    --shell:#17141d;
+    --panel:#211d2a;
+    --line:#332c42;
+    --text:#d8d2e4;
+    --dim:#7d7391;
+    --amber:#f2a25c;
+    --accent:var(--amber);
+    --cyan:#6fd3c7;
+    --rose:#e0698a;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:#08070a;
+    font-family:var(--mono);
+    color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+
+  /* ---------- device shell ---------- */
+  #device{
+    position:relative;
+    width:min(400px,100vw);
+    height:min(840px,100vh);
+    background:var(--shell);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  @media (min-width:440px) and (min-height:880px){
+    #device{border-radius:44px;border:1px solid var(--line);box-shadow:0 0 0 10px #131117,0 30px 80px rgba(0,0,0,.8)}
+  }
+
+  /* ---------- status bar ---------- */
+  #statusbar{
+    flex:0 0 auto;
+    padding:calc(env(safe-area-inset-top) + 10px) 20px 8px;
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:11px;letter-spacing:.06em;color:var(--dim);
+    z-index:5;
+  }
+  #statusbar b{color:var(--text);font-weight:600}
+  #statusbar .right span{margin-left:10px}
+
+  /* ---------- screen stack ---------- */
+  #screen{flex:1 1 auto;position:relative;overflow:hidden}
+  .view{position:absolute;inset:0;display:none;flex-direction:column}
+  .view.on{display:flex}
+
+  /* ---------- boot ---------- */
+  #boot{background:var(--void);padding:20px;font-size:11.5px;line-height:1.75;overflow:hidden;justify-content:flex-end;padding-bottom:60px}
+  #boot .ok{color:var(--cyan)}
+  #boot .warn{color:var(--accent)}
+  #bootlog div{white-space:pre-wrap;word-break:break-word}
+  #cursorline{color:var(--accent)}
+
+  /* ---------- home ---------- */
+  #home{padding:8px 20px 20px}
+  .greet{font-size:12px;color:var(--dim);margin-bottom:2px}
+  .greet b{color:var(--accent);font-weight:600}
+  .uptime{font-size:11px;color:var(--dim);margin-bottom:22px}
+  .apps{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;padding-bottom:20px}
+  .app{
+    background:var(--panel);border:1px solid var(--line);
+    padding:14px 12px 12px;text-align:left;cursor:pointer;
+    color:var(--text);font-family:var(--mono);
+    display:flex;flex-direction:column;gap:6px;
+    transition:border-color .15s,transform .1s;
+  }
+  .app:active{transform:scale(.97);border-color:var(--accent)}
+  .app .glyph{font-size:20px;color:var(--accent);line-height:1}
+  .app .name{font-size:13px;font-weight:600}
+  .app .desc{font-size:10px;color:var(--dim);line-height:1.4}
+  .app:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- generic app window ---------- */
+  .titlebar{
+    flex:0 0 auto;display:flex;align-items:center;gap:10px;
+    padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);
+    font-size:12px;
+  }
+  .titlebar .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:0 0 auto}
+  .titlebar .path{color:var(--dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .body{flex:1 1 auto;overflow-y:auto;padding:16px;font-size:12.5px;line-height:1.7;-webkit-overflow-scrolling:touch}
+
+  /* ---------- terminal ---------- */
+  #termbody{background:var(--void)}
+  #termout div{white-space:pre-wrap;word-break:break-word}
+  .prompt{color:var(--cyan)}
+  .err{color:var(--rose)}
+  .muted{color:var(--dim)}
+  #termline{display:flex;gap:6px;align-items:baseline;margin-top:2px}
+  #terminput{
+    flex:1;background:none;border:0;outline:0;color:var(--text);
+    font-family:var(--mono);font-size:12.5px;padding:0;caret-color:var(--accent);
+  }
+
+  /* ---------- files ---------- */
+  .row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer;align-items:baseline}
+  .row:active{color:var(--accent)}
+  .row .k{color:var(--accent);width:14px;flex:0 0 auto}
+  .row .sz{margin-left:auto;color:var(--dim);font-size:10.5px}
+
+  /* ---------- notes ---------- */
+  #notepad{
+    width:100%;height:100%;background:none;border:0;outline:0;resize:none;
+    color:var(--text);font-family:var(--mono);font-size:12.5px;line-height:1.8;
+  }
+
+  /* ---------- settings ---------- */
+  .setrow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+  .setrow .lab{font-size:12px}
+  .setrow .sub{font-size:10px;color:var(--dim);margin-top:3px}
+  .swatches{display:flex;gap:8px}
+  .sw{width:24px;height:24px;border:1px solid var(--line);cursor:pointer}
+  .sw[aria-pressed="true"]{outline:2px solid var(--text);outline-offset:2px}
+  .btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--text);
+    font-family:var(--mono);font-size:11px;padding:7px 12px;cursor:pointer;
+  }
+  .btn:active{border-color:var(--accent);color:var(--accent)}
+
+  /* ---------- home bar ---------- */
+  #navbar{
+    flex:0 0 auto;display:flex;justify-content:center;align-items:center;
+    padding:10px 0 calc(env(safe-area-inset-bottom) + 10px);
+    background:var(--shell);border-top:1px solid var(--line);
+  }
+  #homebtn{
+    width:120px;height:5px;border-radius:3px;background:var(--line);border:0;cursor:pointer;
+    transition:background .15s,width .15s;
+  }
+  #homebtn:active{background:var(--accent);width:100px}
+  #navbar.hidden{display:none}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="device">
+
+  <div id="statusbar">
+    <div class="left"><b id="clock">--:--</b> <span id="tz"></span></div>
+    <div class="right"><span id="netlabel">eth0</span><span id="batt">100%</span></div>
+  </div>
+
+  <div id="screen">
+
+    <!-- BOOT -->
+    <section class="view on" id="boot">
+      <div id="bootlog"></div>
+      <div id="cursorline"></div>
+    </section>
+
+    <!-- HOME -->
+    <section class="view" id="home">
+      <div class="greet">user@<b>pocketnix</b>:~$</div>
+      <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
+      <div class="apps" id="applist"></div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section class="view" id="terminal">
+      <div class="titlebar"><span class="dot"></span><span class="path">/bin/sh &mdash; terminal</span></div>
+      <div class="body" id="termbody">
+        <div id="termout"></div>
+        <div id="termline">
+          <span class="prompt" id="ps1">~$</span>
+          <input id="terminput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+    </section>
+
+    <!-- FILES -->
+    <section class="view" id="files">
+      <div class="titlebar"><span class="dot"></span><span class="path" id="filepath">/home/user</span></div>
+      <div class="body" id="filebody"></div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="view" id="notes">
+      <div class="titlebar"><span class="dot"></span><span class="path">~/notes.txt</span></div>
+      <div class="body"><textarea id="notepad" placeholder="Type here. Saved to /home/user/notes.txt for this session."></textarea></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="settings">
+      <div class="titlebar"><span class="dot"></span><span class="path">system settings</span></div>
+      <div class="body">
+        <div class="setrow">
+          <div><div class="lab">Accent colour</div><div class="sub">Applies system-wide</div></div>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="setrow">
+          <div><div class="lab">Hostname</div><div class="sub" id="hostsub">pocketnix</div></div>
+          <button class="btn" id="renamebtn">Rename</button>
+        </div>
+        <div class="setrow">
+          <div><div class="lab">Restart</div><div class="sub">Replays the boot sequence</div></div>
+          <button class="btn" id="rebootbtn">Restart</button>
+        </div>
+        <div class="setrow" style="border:0">
+          <div><div class="lab">Build</div><div class="sub">pocketnix 0.1 &middot; kernel 6.9.0-arm64</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="view" id="about">
+      <div class="titlebar"><span class="dot"></span><span class="path">about this device</span></div>
+      <div class="body" id="aboutbody"></div>
+    </section>
+
+  </div>
+
+  <div id="navbar" class="hidden"><button id="homebtn" aria-label="Home"></button></div>
+</div>
+
+<script>
+"use strict";
+
+/* ============ state ============ */
+const BOOT_AT = Date.now();
+let HOST = "pocketnix";
+const USER = "user";
+
+/* in-memory filesystem: dir = object, file = string */
+const FS = {
+  bin:{ sh:"#!/bin/sh\n", ls:"", cat:"", uname:"" },
+  etc:{
+    "hostname":"pocketnix\n",
+    "os-release":'NAME="pocketnix"\nVERSION="0.1 (handheld)"\nID=pocketnix\nARCH=arm64\n',
+    "motd":"Welcome to pocketnix. Type `help` to get started.\n"
+  },
+  home:{ user:{
+    "readme.txt":"This whole device is one HTML file.\nNothing here leaves your phone.\n",
+    "notes.txt":"",
+    projects:{ "todo.md":"- [ ] add more apps\n- [ ] make notes persist\n- [ ] pick a wallpaper\n" }
+  }},
+  var:{ log:{ "boot.log":"kernel: ok\n" } }
+};
+
+/* ============ view routing ============ */
+const views = {};
+document.querySelectorAll(".view").forEach(v => views[v.id] = v);
+let current = "boot";
+
+function show(id){
+  Object.values(views).forEach(v => v.classList.remove("on"));
+  views[id].classList.add("on");
+  current = id;
+  document.getElementById("navbar").classList.toggle("hidden", id === "boot");
+  if(id === "terminal") setTimeout(()=>document.getElementById("terminput").focus(), 60);
+  if(id === "files") renderFiles();
+  if(id === "about") renderAbout();
+}
+document.getElementById("homebtn").addEventListener("click", ()=>{
+  document.getElementById("terminput").blur();
+  show("home");
+});
+
+/* ============ status bar ============ */
+function pad(n){ return String(n).padStart(2,"0"); }
+function tickClock(){
+  const d = new Date();
+  document.getElementById("clock").textContent = pad(d.getHours())+":"+pad(d.getMinutes());
+  const mins = Math.floor((Date.now()-BOOT_AT)/60000);
+  document.getElementById("uptime").textContent =
+    "up "+(mins<1 ? Math.floor((Date.now()-BOOT_AT)/1000)+"s" : mins+"m")+" · load 0.0"+(1+(d.getSeconds()%6));
+}
+setInterval(tickClock, 1000); tickClock();
+try{
+  document.getElementById("tz").textContent =
+    Intl.DateTimeFormat().resolvedOptions().timeZone.split("/").pop().replace(/_/g," ").toLowerCase();
+}catch(e){}
+if(navigator.getBattery){
+  navigator.getBattery().then(b=>{
+    const set = ()=> document.getElementById("batt").textContent = Math.round(b.level*100)+"%";
+    set(); b.addEventListener("levelchange", set);
+  });
+}
+function netlabel(){
+  document.getElementById("netlabel").textContent = navigator.onLine ? "wlan0" : "offline";
+}
+addEventListener("online", netlabel); addEventListener("offline", netlabel); netlabel();
+
+/* ============ boot sequence ============ */
+const BOOT_LINES = [
+  ["      pocketnix 0.1  (tty1)",""],
+  ["",""],
+  ["[    0.000000] Booting Linux on physical CPU 0x0","ok"],
+  ["[    0.104221] Memory: 6144M available","ok"],
+  ["[    0.291884] Mounting root filesystem (in-memory)","ok"],
+  ["[    0.402117] Starting display manager","ok"],
+  ["[    0.588903] Touch input: capacitive, 10-point","ok"],
+  ["[    0.771560] Radio firmware not signed — continuing","warn"],
+  ["[    0.902433] Starting session for user","ok"],
+  ["",""],
+  ["  welcome back.",""]
+];
+function boot(){
+  show("boot");
+  const log = document.getElementById("bootlog");
+  const cur = document.getElementById("cursorline");
+  log.innerHTML = ""; cur.textContent = "";
+  let i = 0;
+  (function next(){
+    if(i >= BOOT_LINES.length){
+      cur.textContent = "_";
+      setTimeout(()=>{ cur.textContent=""; show("home"); }, 450);
+      return;
+    }
+    const [text, cls] = BOOT_LINES[i++];
+    const el = document.createElement("div");
+    el.textContent = text;
+    if(cls) el.className = cls;
+    log.appendChild(el);
+    setTimeout(next, text === "" ? 90 : 130 + Math.random()*110);
+  })();
+}
+
+/* ============ home / launcher ============ */
+const APPS = [
+  {id:"terminal", glyph:"~$", name:"terminal", desc:"shell with a real command parser"},
+  {id:"files",    glyph:"/",  name:"files",    desc:"browse the in-memory filesystem"},
+  {id:"notes",    glyph:"✎",  name:"notes",    desc:"scratchpad, writes to ~/notes.txt"},
+  {id:"settings", glyph:"⚙",  name:"settings", desc:"accent, hostname, restart"},
+  {id:"about",    glyph:"i",  name:"about",    desc:"device + browser info"}
+];
+const list = document.getElementById("applist");
+APPS.forEach(a=>{
+  const b = document.createElement("button");
+  b.className = "app";
+  b.innerHTML = `<span class="glyph">${a.glyph}</span><span class="name">${a.name}</span><span class="desc">${a.desc}</span>`;
+  b.addEventListener("click", ()=>show(a.id));
+  list.appendChild(b);
+});
+
+/* ============ filesystem helpers ============ */
+function resolve(path, cwd){
+  const abs = path.startsWith("/") ? [] : cwd.slice();
+  for(const part of path.split("/")){
+    if(part === "" || part === ".") continue;
+    if(part === "..") abs.pop();
+    else if(part === "~"){ abs.length = 0; abs.push("home", USER); }
+    else abs.push(part);
+  }
+  return abs;
+}
+function nodeAt(parts){
+  let n = FS;
+  for(const p of parts){
+    if(n && typeof n === "object" && p in n) n = n[p];
+    else return null;
+  }
+  return n;
+}
+function isDir(n){ return n && typeof n === "object"; }
+function pretty(parts){
+  const s = "/" + parts.join("/");
+  return s.startsWith("/home/"+USER) ? "~"+s.slice(("/home/"+USER).length) : s;
+}
+
+/* ============ terminal ============ */
+let cwd = ["home", USER];
+const out = document.getElementById("termout");
+const input = document.getElementById("terminput");
+const history = []; let hIdx = 0;
+
+function println(text, cls){
+  const d = document.createElement("div");
+  if(cls) d.className = cls;
+  d.textContent = text;
+  out.appendChild(d);
+  document.getElementById("termbody").scrollTop = 1e6;
+}
+function setPS1(){ document.getElementById("ps1").textContent = pretty(cwd)+"$"; }
+
+const CMDS = {
+  help(){
+    println("commands:");
+    println("  ls [dir]      cd <dir>      pwd        cat <file>");
+    println("  mkdir <dir>   touch <file>  rm <path>  echo <text>");
+    println("  whoami        uname [-a]    date       uptime");
+    println("  neofetch      open <app>    clear      exit");
+  },
+  ls(args){
+    const target = args[0] ? resolve(args[0], cwd) : cwd;
+    const n = nodeAt(target);
+    if(!n) return println("ls: "+args[0]+": no such file or directory","err");
+    if(!isDir(n)) return println(args[0]);
+    const keys = Object.keys(n);
+    if(!keys.length) return println("(empty)","muted");
+    println(keys.map(k => isDir(n[k]) ? k+"/" : k).join("   "));
+  },
+  cd(args){
+    if(!args[0]){ cwd = ["home",USER]; return setPS1(); }
+    const t = resolve(args[0], cwd), n = nodeAt(t);
+    if(!n) return println("cd: "+args[0]+": no such file or directory","err");
+    if(!isDir(n)) return println("cd: "+args[0]+": not a directory","err");
+    cwd = t; setPS1();
+  },
+  pwd(){ println("/"+cwd.join("/")); },
+  cat(args){
+    if(!args[0]) return println("cat: missing operand","err");
+    const n = nodeAt(resolve(args[0], cwd));
+    if(n === null) return println("cat: "+args[0]+": no such file or directory","err");
+    if(isDir(n)) return println("cat: "+args[0]+": is a directory","err");
+    println(n.replace(/\n$/,"") || "(empty file)");
+  },
+  mkdir(args){
+    if(!args[0]) return println("mkdir: missing operand","err");
+    const t = resolve(args[0], cwd), name = t.pop(), parent = nodeAt(t);
+    if(!isDir(parent)) return println("mkdir: cannot create directory","err");
+    if(name in parent) return println("mkdir: "+args[0]+": file exists","err");
+    parent[name] = {};
+  },
+  touch(args){
+    if(!args[0]) return println("touch: missing operand","err");
+    const t = resolve(args[0], cwd), name = t.pop(), parent = nodeAt(t);
+    if(!isDir(parent)) return println("touch: cannot create file","err");
+    if(!(name in parent)) parent[name] = "";
+  },
+  rm(args){
+    if(!args[0]) return println("rm: missing operand","err");
+    const t = resolve(args[0], cwd), name = t.pop(), parent = nodeAt(t);
+    if(!isDir(parent) || !(name in parent)) return println("rm: "+args[0]+": no such file or directory","err");
+    delete parent[name];
+  },
+  echo(args){ println(args.join(" ")); },
+  whoami(){ println(USER); },
+  uname(args){
+    println(args[0] === "-a"
+      ? "pocketnix "+HOST+" 6.9.0-arm64 #1 SMP handheld arm64"
+      : "pocketnix");
+  },
+  date(){ println(new Date().toString()); },
+  uptime(){ println(document.getElementById("uptime").textContent); },
+  clear(){ out.innerHTML = ""; },
+  neofetch(){
+    const mem = navigator.deviceMemory ? navigator.deviceMemory+"G" : "6G";
+    [
+      "   ,----.     "+USER+"@"+HOST,
+      "  / .--. \\    ---------------",
+      " | |    | |   os      pocketnix 0.1",
+      " | |    | |   kernel  6.9.0-arm64",
+      "  \\ '--' /    shell   sh",
+      "   '----'     memory  "+mem,
+      "              screen  "+screen.width+"x"+screen.height,
+      "              uptime  "+document.getElementById("uptime").textContent.replace("up ","").split(" ·")[0]
+    ].forEach(l => println(l));
+  },
+  open(args){
+    const a = APPS.find(x => x.name === args[0]);
+    if(!a) return println("open: unknown app: "+(args[0]||""),"err");
+    show(a.id);
+  },
+  exit(){ println("logging out…","muted"); setTimeout(()=>show("home"), 350); }
+};
+
+function run(raw){
+  const line = raw.trim();
+  println(pretty(cwd)+"$ "+line, "prompt");
+  if(!line) return;
+  history.push(line); hIdx = history.length;
+  const [cmd, ...args] = line.split(/\s+/);
+  if(CMDS[cmd]) CMDS[cmd](args);
+  else println(cmd+": command not found — try `help`", "err");
+}
+input.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){ run(input.value); input.value = ""; }
+  else if(e.key === "ArrowUp"){ e.preventDefault(); if(hIdx>0) input.value = history[--hIdx]; }
+  else if(e.key === "ArrowDown"){ e.preventDefault(); hIdx = Math.min(hIdx+1, history.length); input.value = history[hIdx] || ""; }
+});
+document.getElementById("termbody").addEventListener("click", ()=>input.focus());
+println(FS.etc.motd.trim(), "muted");
+setPS1();
+
+/* ============ files app ============ */
+let fcwd = ["home", USER];
+function renderFiles(){
+  const body = document.getElementById("filebody");
+  document.getElementById("filepath").textContent = pretty(fcwd);
+  const n = nodeAt(fcwd);
+  body.innerHTML = "";
+  if(fcwd.length){
+    body.appendChild(row("..", "↑", "", ()=>{ fcwd.pop(); renderFiles(); }));
+  }
+  const keys = Object.keys(n);
+  if(!keys.length){
+    const e = document.createElement("div");
+    e.className = "muted"; e.style.paddingTop = "12px";
+    e.textContent = "Nothing here yet. Create something with `mkdir` or `touch` in the terminal.";
+    body.appendChild(e); return;
+  }
+  keys.forEach(k=>{
+    const child = n[k];
+    if(isDir(child)) body.appendChild(row(k+"/", "▸", Object.keys(child).length+" items", ()=>{ fcwd.push(k); renderFiles(); }));
+    else body.appendChild(row(k, "·", child.length+" B", ()=>viewFile(k, child)));
+  });
+}
+function row(label, glyph, size, onclick){
+  const d = document.createElement("div");
+  d.className = "row";
+  d.innerHTML = `<span class="k">${glyph}</span><span>${label}</span><span class="sz">${size}</span>`;
+  d.addEventListener("click", onclick);
+  return d;
+}
+function viewFile(name, content){
+  const body = document.getElementById("filebody");
+  document.getElementById("filepath").textContent = pretty(fcwd)+"/"+name;
+  body.innerHTML = "";
+  body.appendChild(row("back", "↑", "", renderFiles));
+  const pre = document.createElement("div");
+  pre.style.whiteSpace = "pre-wrap";
+  pre.style.paddingTop = "12px";
+  pre.textContent = content || "(empty file)";
+  if(!content) pre.className = "muted";
+  body.appendChild(pre);
+}
+
+/* ============ notes ============ */
+const pad2 = document.getElementById("notepad");
+pad2.value = FS.home[USER]["notes.txt"];
+pad2.addEventListener("input", ()=>{ FS.home[USER]["notes.txt"] = pad2.value; });
+
+/* ============ settings ============ */
+const ACCENTS = ["#f2a25c","#6fd3c7","#e0698a","#a48ce0","#9fd356"];
+const sw = document.getElementById("swatches");
+ACCENTS.forEach((c,i)=>{
+  const b = document.createElement("button");
+  b.className = "sw"; b.style.background = c;
+  b.setAttribute("aria-pressed", i===0); b.setAttribute("aria-label","Accent "+c);
+  b.addEventListener("click", ()=>{
+    document.documentElement.style.setProperty("--accent", c);
+    [...sw.children].forEach(x => x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+  });
+  sw.appendChild(b);
+});
+document.getElementById("renamebtn").addEventListener("click", ()=>{
+  const v = prompt("New hostname:", HOST);
+  if(v && /^[a-z0-9-]+$/i.test(v)){
+    HOST = v.toLowerCase();
+    FS.etc.hostname = HOST+"\n";
+    document.getElementById("hostsub").textContent = HOST;
+    document.querySelector(".greet").innerHTML = "user@<b>"+HOST+"</b>:~$";
+  }
+});
+document.getElementById("rebootbtn").addEventListener("click", boot);
+
+/* ============ about ============ */
+function renderAbout(){
+  const rows = [
+    ["hostname", HOST],
+    ["user", USER],
+    ["os", "pocketnix 0.1"],
+    ["kernel", "6.9.0-arm64"],
+    ["screen", screen.width+"×"+screen.height+" @"+(window.devicePixelRatio||1)+"x"],
+    ["viewport", innerWidth+"×"+innerHeight],
+    ["memory", (navigator.deviceMemory||"6")+" GB"],
+    ["cores", navigator.hardwareConcurrency||"—"],
+    ["network", navigator.onLine ? "connected" : "offline"],
+    ["installed", matchMedia("(display-mode: standalone)").matches || navigator.standalone ? "yes — running from homescreen" : "no — running in browser"],
+    ["storage", "in-memory (resets on close)"]
+  ];
+  const body = document.getElementById("aboutbody");
+  body.innerHTML = "";
+  rows.forEach(([k,v])=>{
+    const d = document.createElement("div");
+    d.className = "setrow";
+    d.innerHTML = `<span class="lab muted">${k}</span><span class="lab">${v}</span>`;
+    body.appendChild(d);
+  });
+}
+
+/* ============ go ============ */
+boot();
+</script>
+</body>
+</html>
