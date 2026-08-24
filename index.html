@@ -227,7 +227,7 @@
       <button class="pickbtn" id="pick-linux">
         <span class="pk-glyph">~$</span>
         <span class="pk-name">Linux</span>
-        <span class="pk-desc">pocketnix &mdash; boot log, shell, in-memory filesystem</span>
+        <span class="pk-desc">gazéifié &mdash; boot log, shell, in-memory filesystem</span>
       </button>
       <button class="pickbtn" id="pick-android">
         <span class="pk-glyph">&#9638;</span>
@@ -250,7 +250,7 @@
 
     <!-- HOME (linux) -->
     <section class="view" id="home">
-      <div class="greet">user@<b>pocketnix</b>:~$</div>
+      <div class="greet">user@<b>gazéifié</b>:~$</div>
       <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
       <div class="apps" id="applist"></div>
     </section>
@@ -295,7 +295,7 @@
           <div class="swatches" id="swatches"></div>
         </div>
         <div class="setrow">
-          <div><div class="lab">Hostname</div><div class="sub" id="hostsub">pocketnix</div></div>
+          <div><div class="lab">Hostname</div><div class="sub" id="hostsub">gazéifié</div></div>
           <button class="btn" id="renamebtn">Rename</button>
         </div>
         <div class="setrow">
@@ -307,7 +307,7 @@
           <button class="btn" id="switchbtn">Switch</button>
         </div>
         <div class="setrow" style="border:0">
-          <div><div class="lab">Build</div><div class="sub" id="buildsub">pocketnix 0.1 &middot; kernel 6.9.0-arm64</div></div>
+          <div><div class="lab">Build</div><div class="sub" id="buildsub">gazéifié 0.1 &middot; kernel 6.9.0-arm64</div></div>
         </div>
       </div>
     </section>
@@ -333,16 +333,16 @@
 
 /* ============ state ============ */
 const BOOT_AT = Date.now();
-let HOST = "pocketnix";
+let HOST = "gazéifié";
 const USER = "user";
 
 /* in-memory filesystem: dir = object, file = string */
 const FS = {
   bin:{ sh:"#!/bin/sh\n", ls:"", cat:"", uname:"" },
   etc:{
-    "hostname":"pocketnix\n",
-    "os-release":'NAME="pocketnix"\nVERSION="0.1 (handheld)"\nID=pocketnix\nARCH=arm64\n',
-    "motd":"Welcome to pocketnix. Type `help` to get started.\n"
+    "hostname":"gazéifié\n",
+    "os-release":'NAME="gazéifié"\nVERSION="0.1 (handheld)"\nID=gazéifié\nARCH=arm64\n',
+    "motd":"Welcome to gazéifié. Type `help` to get started.\n"
   },
   home:{ user:{
     "readme.txt":"This whole device is one HTML file.\nNothing here leaves your phone.\n",
@@ -394,7 +394,7 @@ function choosePlatform(p){
   const bsub = document.getElementById("buildsub");
   if(bsub) bsub.textContent = p === "android"
     ? "Android 4.0.4 (ICS) · kernel 3.0.8"
-    : "pocketnix 0.1 · kernel 6.9.0-arm64";
+    : "gazéifié 0.1 · kernel 6.9.0-arm64";
   if(p === "android") bootAndroid(); else boot();
 }
 document.getElementById("pick-linux").addEventListener("click", ()=> choosePlatform("linux"));
@@ -433,7 +433,7 @@ addEventListener("online", netlabel); addEventListener("offline", netlabel); net
 
 /* ============ boot sequence ============ */
 const BOOT_LINES = [
-  ["      pocketnix 0.1  (tty1)",""],
+  ["      gazéifié 0.1  (tty1)",""],
   ["",""],
   ["[    0.000000] Booting Linux on physical CPU 0x0","ok"],
   ["[    0.104221] Memory: 6144M available","ok"],
@@ -592,8 +592,8 @@ const CMDS = {
   whoami(){ println(USER); },
   uname(args){
     println(args[0] === "-a"
-      ? "pocketnix "+HOST+" 6.9.0-arm64 #1 SMP handheld arm64"
-      : "pocketnix");
+      ? "gazéifié "+HOST+" 6.9.0-arm64 #1 SMP handheld arm64"
+      : "gazéifié");
   },
   date(){ println(new Date().toString()); },
   uptime(){ println(document.getElementById("uptime").textContent); },
@@ -603,7 +603,7 @@ const CMDS = {
     [
       "   ,----.     "+USER+"@"+HOST,
       "  / .--. \\    ---------------",
-      " | |    | |   os      pocketnix 0.1",
+      " | |    | |   os      gazéifié 0.1",
       " | |    | |   kernel  6.9.0-arm64",
       "  \\ '--' /    shell   sh",
       "   '----'     memory  "+mem,
@@ -715,7 +715,7 @@ function renderAbout(){
   const rows = [
     ["hostname", HOST],
     ["user", USER],
-    ["os", PLATFORM === "android" ? "Android 4.0.4 (Ice Cream Sandwich)" : "pocketnix 0.1"],
+    ["os", PLATFORM === "android" ? "Android 4.0.4 (Ice Cream Sandwich)" : "gazéifié 0.1"],
     ["kernel", PLATFORM === "android" ? "3.0.8-perf-g-droid" : "6.9.0-arm64"],
     ["screen", screen.width+"×"+screen.height+" @"+(window.devicePixelRatio||1)+"x"],
     ["viewport", innerWidth+"×"+innerHeight],
