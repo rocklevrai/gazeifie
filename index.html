@@ -142,6 +142,110 @@
   }
   .task.active{color:var(--accent);border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
 
+  /* ---------- aqua window chrome ---------- */
+  #device[data-platform="linux"] .win{
+    border-radius:11px 11px 9px 9px;
+    background:rgba(247,251,255,.90);
+    border:1px solid rgba(255,255,255,.75);
+    box-shadow:0 22px 46px rgba(2,22,52,.5), 0 2px 0 rgba(255,255,255,.5) inset,
+               0 0 0 1px rgba(10,50,95,.22);
+    backdrop-filter:blur(16px) saturate(1.25);-webkit-backdrop-filter:blur(16px) saturate(1.25);
+  }
+  #device[data-platform="linux"] .win.focused{
+    box-shadow:0 26px 54px rgba(2,22,52,.58), 0 2px 0 rgba(255,255,255,.6) inset,
+               0 0 0 1px rgba(10,50,95,.3);
+  }
+  /* brushed-glass title bar with fine pinstripes */
+  #device[data-platform="linux"] .win > .view > .titlebar{
+    background:
+      repeating-linear-gradient(rgba(255,255,255,.5) 0 1px, rgba(0,0,0,.012) 1px 2px),
+      linear-gradient(#fdfeff 0%, #e6eef7 48%, #d3e0ee 52%, #c8d8e8 100%);
+    border-bottom:1px solid rgba(16,60,105,.3);
+    color:#1b3a52;padding:8px 10px;gap:7px;
+    font-family:var(--sans);font-size:11.5px;font-weight:600;
+    text-shadow:0 1px 0 rgba(255,255,255,.85);
+  }
+  #device[data-platform="linux"] .win .titlebar .path{
+    color:#254a66;text-align:center;font-weight:600;
+  }
+  #device[data-platform="linux"] .win .titlebar .dot{display:none}
+  /* traffic-light lozenges, aqua gloss */
+  #device[data-platform="linux"] .wbtn{
+    width:14px;height:14px;border-radius:50%;padding:0;font-size:0;position:relative;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(0,30,60,.35);
+  }
+  #device[data-platform="linux"] .wbtn::after{
+    content:"";position:absolute;left:2px;right:2px;top:1px;height:45%;
+    border-radius:50%/70% 70% 40% 40%;background:rgba(255,255,255,.7);
+  }
+  #device[data-platform="linux"] .wbtn.close{background:radial-gradient(circle at 50% 30%,#ff8a80,#e0443b)}
+  #device[data-platform="linux"] .wbtn:not(.close){background:radial-gradient(circle at 50% 30%,#ffdd7a,#e8a91d)}
+  #device[data-platform="linux"] .wbtn:active{filter:brightness(1.2)}
+  /* window contents: light paper, dark ink */
+  #device[data-platform="linux"] .win .body{background:rgba(255,255,255,.55);color:var(--text)}
+  #device[data-platform="linux"] .win .row{border-bottom:1px solid rgba(16,60,105,.14)}
+  #device[data-platform="linux"] .win .tbtn{
+    background:linear-gradient(#ffffff,#dce8f4);border:1px solid rgba(16,60,105,.3);
+    border-radius:999px;color:#254a66;
+  }
+  /* the terminal keeps its dark console inside the glass frame */
+  #device[data-platform="linux"] #termbody{background:rgba(6,20,40,.93);color:#d5ecff}
+  #device[data-platform="linux"] #termbody .muted{color:#7fa3c4}
+  /* aqua pill buttons */
+  #device[data-platform="linux"] .btn{
+    background:linear-gradient(#ffffff,#e1ebf6 50%,#cfdfef);
+    border:1px solid rgba(16,60,105,.34);border-radius:999px;color:#1c3d57;
+    text-shadow:0 1px 0 rgba(255,255,255,.8);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(4,30,60,.2);
+  }
+  #device[data-platform="linux"] .btn:active{background:linear-gradient(#cfdfef,#b7cee4)}
+  #device[data-platform="linux"] .ckey{
+    background:linear-gradient(#ffffff,#e8f0f9);color:#1c3d57;
+    border:1px solid rgba(255,255,255,.8);
+  }
+  #device[data-platform="linux"] .ckey:active{background:linear-gradient(#d3e2f1,#bcd2e6)}
+  #device[data-platform="linux"] .ckey.eq{
+    background:linear-gradient(#7fc4ff,#1f7fd4);color:#fff;text-shadow:0 1px 1px rgba(0,40,80,.5);
+  }
+  #device[data-platform="linux"] #calcout{background:linear-gradient(#f2f8ff,#dfeaf6)}
+  #device[data-platform="linux"] textarea{background:rgba(255,255,255,.7);color:var(--text)}
+
+  /* --- aqua dock --- */
+  #device[data-platform="linux"] .dock{
+    background:linear-gradient(rgba(255,255,255,.5),rgba(226,241,253,.28));
+    border:1px solid rgba(255,255,255,.6);border-radius:18px;
+    box-shadow:0 10px 26px rgba(2,26,60,.35), inset 0 1px 0 rgba(255,255,255,.85);
+    backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+    margin:0 6px 8px;padding:8px 6px;gap:2px;position:relative;z-index:2;
+  }
+  #device[data-platform="linux"] .dockbtn{gap:0}
+  #device[data-platform="linux"] .dockbtn .dk-glyph{
+    width:38px;height:38px;border-radius:10px;color:#fff;font-size:15px;
+    display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+    box-shadow:0 3px 8px rgba(2,26,60,.35), inset 0 1px 0 rgba(255,255,255,.8),
+               inset 0 -7px 12px rgba(0,0,0,.16);
+  }
+  #device[data-platform="linux"] .dockbtn .dk-label{display:none}
+  #device[data-platform="linux"] .dockbtn:active{transform:scale(1.18) translateY(-4px)}
+
+  /* --- taskbar: glass pills for open windows --- */
+  #device[data-platform="linux"] #taskbar{padding:0 8px 6px;position:relative;z-index:2}
+  #device[data-platform="linux"] .task{
+    background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.25));
+    border:1px solid rgba(255,255,255,.6);border-radius:999px;
+    color:#123c56;text-shadow:0 1px 0 rgba(255,255,255,.6);
+    font-family:var(--sans);font-weight:600;
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  #device[data-platform="linux"] .task.active{
+    background:linear-gradient(rgba(255,255,255,.85),rgba(214,235,252,.6));
+    border-color:#fff;color:#0b2b40;
+  }
+  #device[data-platform="linux"] #toast{
+    background:rgba(255,255,255,.9);color:#12384f;border:1px solid rgba(255,255,255,.9);
+    border-radius:999px;box-shadow:0 8px 22px rgba(2,26,60,.35);font-family:var(--sans);
+  }
+
   /* ---------- calculator ---------- */
   #calcwrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
   #calcout{
@@ -300,20 +404,90 @@
   .pickbtn .pk-name{font-size:14px;font-weight:600;letter-spacing:.02em}
   .pickbtn .pk-desc{font-size:10px;color:#8c9dc2;line-height:1.35;font-family:var(--sans)}
 
-  /* ---------- desktop platform ---------- */
+  /* ---------- desktop platform: aqua / frutiger aero ---------- */
   #device[data-platform="linux"]{
-    background:var(--backdrop);
-    background-attachment:local;
-    --panel:rgba(255,255,255,.05);
-    --line:rgba(140,170,220,.22);
-    --text:#dbe3f2;
-    --dim:#8c9dc2;
+    /* sky wallpaper: warm glow top-left, teal light pooling at the bottom */
+    background:
+      radial-gradient(58% 38% at 20% 14%, rgba(255,255,255,.42), transparent 62%),
+      radial-gradient(42% 28% at 82% 10%, rgba(190,255,246,.30), transparent 70%),
+      radial-gradient(95% 55% at 50% 104%, rgba(86,232,196,.45), transparent 68%),
+      linear-gradient(#062f79 0%, #0e5fbe 38%, #2f9fd8 70%, #86e6d2 100%);
+    --text:#10222f;
+    --dim:#54728a;
+    --panel:rgba(255,255,255,.62);
+    --line:rgba(16,60,105,.24);
+    font-family:var(--sans);
   }
-  /* let the gradient show through the desktop views */
-  #device[data-platform="linux"] #boot{background:none}
-  #device[data-platform="linux"] #termbody{background:rgba(4,8,18,.45)}
-  #device[data-platform="linux"] #navbar{background:none}
-  #device[data-platform="linux"] .titlebar{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  /* floating bubbles, pure CSS, non-interactive */
+  #device[data-platform="linux"] #home::before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(circle at 18% 72%, rgba(255,255,255,.30) 0 7px, transparent 8px),
+      radial-gradient(circle at 78% 62%, rgba(255,255,255,.22) 0 12px, transparent 13px),
+      radial-gradient(circle at 62% 84%, rgba(255,255,255,.26) 0 5px, transparent 6px),
+      radial-gradient(circle at 34% 90%, rgba(255,255,255,.18) 0 16px, transparent 17px),
+      radial-gradient(circle at 88% 34%, rgba(255,255,255,.20) 0 6px, transparent 7px);
+  }
+  /* boot log stays a dark console — aqua starts once we reach the desktop */
+  #device[data-platform="linux"] #boot{
+    background:linear-gradient(#071228,#040a16);color:#cfe6ff;
+  }
+  #device[data-platform="linux"] #navbar{
+    background:linear-gradient(rgba(255,255,255,.30),rgba(255,255,255,.10));
+    border-top:1px solid rgba(255,255,255,.45);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  }
+  #device[data-platform="linux"] #homebtn{box-shadow:0 1px 3px rgba(0,40,80,.35)}
+  /* glassy menu bar */
+  #device[data-platform="linux"] #statusbar{
+    background:linear-gradient(rgba(255,255,255,.72),rgba(233,245,255,.52));
+    border-bottom:1px solid rgba(255,255,255,.6);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    color:#3d5c74;text-shadow:0 1px 0 rgba(255,255,255,.7);
+  }
+  #device[data-platform="linux"] #statusbar b{color:#10222f}
+
+  /* --- desktop surface --- */
+  #desk{position:relative;z-index:1;flex:1 1 auto;min-height:0;overflow:hidden;padding-top:4px}
+  #deskicons{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:6px 4px}
+  .dicon{
+    background:none;border:0;cursor:pointer;width:76px;
+    display:flex;flex-direction:column;align-items:center;gap:5px;padding:4px 2px;
+    font-family:var(--sans);transition:transform .1s;
+  }
+  .dicon:active{transform:scale(.93)}
+  .dicon:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .di-glyph{
+    width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:19px;color:#fff;
+    box-shadow:0 4px 10px rgba(2,26,60,.4), inset 0 1px 0 rgba(255,255,255,.85),
+               inset 0 -8px 14px rgba(0,0,0,.18);
+    position:relative;overflow:hidden;
+  }
+  /* the aqua gloss: a bright arc across the top half */
+  .di-glyph::after, .dk-glyph::after{
+    content:"";position:absolute;left:6%;right:6%;top:3%;height:44%;
+    border-radius:50%/70% 70% 40% 40%;
+    background:linear-gradient(rgba(255,255,255,.75),rgba(255,255,255,.12));
+    pointer-events:none;
+  }
+  .d-app{background:linear-gradient(#5a6672,#2b3540)}
+  .d-file{background:linear-gradient(#eaf4ff,#b9d4ec);color:#2c5a80}
+  .d-dir{background:linear-gradient(#ffd96b,#e9a72c)}
+  .di-label{
+    font-size:10.5px;color:#fff;text-shadow:0 1px 2px rgba(0,30,60,.75);
+    max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  #device[data-platform="linux"] .uptime{
+    position:absolute;right:8px;bottom:6px;color:rgba(255,255,255,.75);
+    text-shadow:0 1px 2px rgba(0,30,60,.6);font-size:10px;
+  }
+  #device[data-platform="linux"] .iswitch{
+    background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.25));
+    border:1px solid rgba(255,255,255,.6);border-radius:999px;
+    color:#12384f;text-shadow:0 1px 0 rgba(255,255,255,.6);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
 
   /* ---------- android platform ---------- */
   #device[data-platform="android"]{
@@ -401,9 +575,10 @@
     <!-- HOME (linux) -->
     <section class="view" id="home">
       <button class="iswitch" data-switch aria-label="Back to interface picker">&#8644; switch</button>
-      <div class="greet">user@<b>gazéifié</b>:~$</div>
-      <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
-      <div class="apps" id="applist"></div>
+      <div id="desk">
+        <div id="deskicons"></div>
+        <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
+      </div>
       <div id="taskbar"></div>
       <div class="dock" id="dock"></div>
     </section>
@@ -690,13 +865,35 @@ const APPS = [
   {id:"settings", glyph:"⚙",  name:"settings", desc:"accent, hostname, restart"},
   {id:"about",    glyph:"i",  name:"about",    desc:"device + browser info"}
 ];
-const list = document.getElementById("applist");
-APPS.forEach(a=>{
+/* desktop shortcuts: one app + a couple of files, like a real desktop */
+const DESK_ITEMS = [
+  {kind:"app",  id:"terminal",              label:"Terminal"},
+  {kind:"file", path:["home","user"],            file:"readme.txt"},
+  {kind:"file", path:["home","user"],            file:"notes.txt"},
+  {kind:"dir",  path:["home","user","projects"], label:"projects"}
+];
+function openFileWindow(path, file){
+  fcwd = path.slice();
+  show("files");
+  const n = nodeAt(path);
+  if(n && typeof n[file] === "string") viewFile(file, n[file]);
+}
+const deskicons = document.getElementById("deskicons");
+DESK_ITEMS.forEach(it=>{
   const b = document.createElement("button");
-  b.className = "app";
-  b.innerHTML = `<span class="glyph">${a.glyph}</span><span class="name">${a.name}</span><span class="desc">${a.desc}</span>`;
-  b.addEventListener("click", ()=>show(a.id));
-  list.appendChild(b);
+  b.className = "dicon";
+  const glyph = it.kind === "app" ? (APPS.find(a=>a.id===it.id)||{}).glyph
+              : it.kind === "dir" ? "\u25b8" : "\u2261";
+  const label = it.label || it.file;
+  const cls = it.kind === "app" ? "d-app" : it.kind === "dir" ? "d-dir" : "d-file";
+  b.innerHTML = `<span class="di-glyph ${cls}">${glyph}</span><span class="di-label"></span>`;
+  b.querySelector(".di-label").textContent = label;
+  b.addEventListener("click", ()=>{
+    if(it.kind === "app") show(it.id);
+    else if(it.kind === "dir"){ fcwd = it.path.slice(); show("files"); }
+    else openFileWindow(it.path, it.file);
+  });
+  deskicons.appendChild(b);
 });
 
 const APP_COLORS = { terminal:"#333333", files:"#f2b632", notes:"#3ea1e0", calc:"#e0698a",
@@ -711,9 +908,9 @@ APPS.forEach(a=>{
 });
 
 /* ============ dock ============ */
-const DOCK = ["terminal", "files", "notes", "settings"];
-function buildDock(el, coloured){
-  DOCK.forEach(id=>{
+const DOCK_PHONE = ["terminal", "files", "notes", "settings"];
+function buildDock(el, coloured, ids){
+  ids.forEach(id=>{
     const a = APPS.find(x => x.id === id);
     if(!a) return;
     const b = document.createElement("button");
@@ -725,8 +922,8 @@ function buildDock(el, coloured){
     el.appendChild(b);
   });
 }
-buildDock(document.getElementById("dock"), false);
-buildDock(document.getElementById("dock-android"), true);
+buildDock(document.getElementById("dock"), true, APPS.map(a=>a.id));
+buildDock(document.getElementById("dock-android"), true, DOCK_PHONE);
 
 /* ============ desktop window manager ============ */
 const MAX_WINDOWS = 3;
