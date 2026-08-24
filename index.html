@@ -30,6 +30,10 @@
     --rose:#e0698a;
     --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
     --sans:-apple-system,"Segoe UI",Roboto,"Droid Sans",Helvetica,Arial,sans-serif;
+    /* shared night-blue backdrop: welcome screen + desktop skin */
+    --backdrop:
+      radial-gradient(120% 90% at 50% 0%, #1b3a6b 0%, rgba(27,58,107,0) 65%),
+      linear-gradient(#0d1830 0%, #0a1024 55%, #070b18 100%);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
@@ -82,7 +86,7 @@
   .greet{font-size:12px;color:var(--dim);margin-bottom:2px}
   .greet b{color:var(--accent);font-weight:600}
   .uptime{font-size:11px;color:var(--dim);margin-bottom:22px}
-  .apps{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;padding-bottom:20px}
+  .apps{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;overflow-y:auto;flex:1 1 auto;min-height:0;padding-bottom:12px}
   .app{
     background:var(--panel);border:1px solid var(--line);
     padding:14px 12px 12px;text-align:left;cursor:pointer;
@@ -95,6 +99,86 @@
   .app .name{font-size:13px;font-weight:600}
   .app .desc{font-size:10px;color:var(--dim);line-height:1.4}
   .app:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- calculator ---------- */
+  #calcwrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  #calcout{
+    flex:0 0 auto;padding:18px 18px 14px;text-align:right;
+    border-bottom:1px solid var(--line);
+  }
+  #calcexpr{font-size:11px;color:var(--dim);min-height:14px;word-break:break-all}
+  #calcval{font-size:34px;font-weight:600;line-height:1.25;word-break:break-all}
+  #calcpad{flex:1 1 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);min-height:0}
+  .ckey{
+    background:var(--shell);border:0;color:var(--text);font-family:var(--mono);
+    font-size:19px;cursor:pointer;transition:background .1s;
+  }
+  .ckey:active{background:var(--panel)}
+  .ckey.op{color:var(--accent)}
+  .ckey.fn{color:var(--dim);font-size:15px}
+  .ckey.eq{background:var(--accent);color:#141019;font-weight:700}
+  .ckey.eq:active{filter:brightness(1.15)}
+  .ckey:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+
+  /* ---------- stopwatch ---------- */
+  #swwrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:20px 18px}
+  #swtime{font-size:40px;font-weight:600;text-align:center;letter-spacing:.02em;padding:22px 0 6px;font-variant-numeric:tabular-nums}
+  #swtime small{font-size:20px;color:var(--dim)}
+  #swbtns{display:flex;gap:10px;justify-content:center;padding:14px 0 16px}
+  #swbtns .btn{flex:1;max-width:110px;text-align:center;font-size:12px;padding:11px 0}
+  #swlaps{flex:1 1 auto;overflow-y:auto;min-height:0;border-top:1px solid var(--line)}
+  .lap{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--line);font-size:12px}
+  .lap .n{color:var(--dim)}
+
+  /* ---------- files toolbar ---------- */
+  .tbtn{
+    background:none;border:1px solid var(--line);color:var(--dim);font-family:var(--mono);
+    font-size:10px;padding:4px 7px;cursor:pointer;flex:0 0 auto;
+  }
+  .tbtn:active{border-color:var(--accent);color:var(--accent)}
+  .row .del{
+    margin-left:10px;color:var(--dim);font-size:13px;padding:0 4px;
+    background:none;border:0;font-family:var(--mono);cursor:pointer;flex:0 0 auto;
+  }
+  .row .del:active{color:var(--rose)}
+
+  /* ---------- dock (both home screens) ---------- */
+  .dock{
+    flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;
+    gap:6px;padding:10px 8px;margin-top:10px;
+    background:var(--panel);border:1px solid var(--line);
+  }
+  .dockbtn{
+    background:none;border:0;cursor:pointer;color:var(--text);font-family:var(--mono);
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    flex:1;padding:2px 0;transition:transform .1s;
+  }
+  .dockbtn:active{transform:scale(.9)}
+  .dockbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .dockbtn .dk-glyph{font-size:18px;color:var(--accent);line-height:1}
+  .dockbtn .dk-label{font-size:9px;color:var(--dim);letter-spacing:.04em}
+
+  /* phone skin: rounded translucent tray, iOS-ish, colour chips instead of glyphs */
+  #device[data-platform="android"] .dock{
+    background:rgba(0,0,0,.55);border:0;border-radius:18px;margin:0 4px 12px;padding:12px 6px;
+  }
+  #device[data-platform="android"] .dockbtn{font-family:var(--sans);gap:0}
+  #device[data-platform="android"] .dockbtn .dk-glyph{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;color:#fff;font-family:var(--mono);
+  }
+  #device[data-platform="android"] .dockbtn .dk-label{display:none}
+
+  /* ---------- switch-interface control (both home screens) ---------- */
+  .iswitch{
+    position:absolute;top:8px;right:16px;z-index:4;
+    background:none;border:1px solid var(--line);color:var(--dim);
+    font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+    padding:5px 9px;cursor:pointer;
+    transition:border-color .15s,color .15s;
+  }
+  .iswitch:active{border-color:var(--accent);color:var(--accent)}
+  .iswitch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   /* ---------- generic app window ---------- */
   .titlebar{
@@ -157,12 +241,7 @@
   #navbar.hidden{display:none}
 
   /* ---------- picker (startup) ---------- */
-  #picker{
-    background:
-      radial-gradient(120% 90% at 50% 0%, #1b3a6b 0%, rgba(27,58,107,0) 65%),
-      linear-gradient(#0d1830 0%, #0a1024 55%, #070b18 100%);
-    padding:20px;justify-content:center;gap:14px;
-  }
+  #picker{background:var(--backdrop);padding:20px;justify-content:center;gap:14px}
   .pick-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7f93bd;text-align:center;margin-bottom:14px}
   .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .pickbtn{
@@ -179,6 +258,21 @@
   .pickbtn .pk-name{font-size:14px;font-weight:600;letter-spacing:.02em}
   .pickbtn .pk-desc{font-size:10px;color:#8c9dc2;line-height:1.35;font-family:var(--sans)}
 
+  /* ---------- desktop platform ---------- */
+  #device[data-platform="linux"]{
+    background:var(--backdrop);
+    background-attachment:local;
+    --panel:rgba(255,255,255,.05);
+    --line:rgba(140,170,220,.22);
+    --text:#dbe3f2;
+    --dim:#8c9dc2;
+  }
+  /* let the gradient show through the desktop views */
+  #device[data-platform="linux"] #boot{background:none}
+  #device[data-platform="linux"] #termbody{background:rgba(4,8,18,.45)}
+  #device[data-platform="linux"] #navbar{background:none}
+  #device[data-platform="linux"] .titlebar{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
   /* ---------- android platform ---------- */
   #device[data-platform="android"]{
     --accent:#a4c639;--void:#101010;--shell:#1c1c1c;--panel:#262626;
@@ -192,7 +286,7 @@
   #home-android{padding:0 12px}
   .ahome-clock{font-size:50px;font-weight:300;text-align:center;margin-top:26px;color:var(--text);font-family:var(--sans)}
   .ahome-date{font-size:11.5px;text-align:center;color:var(--dim);margin-bottom:22px}
-  .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px;overflow-y:auto;padding-bottom:20px}
+  .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px;align-content:start;overflow-y:auto;flex:1 1 auto;min-height:0;padding-bottom:12px}
   .aicon{background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font-family:var(--sans)}
   .aicon .ai-glyph{
     width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;
@@ -264,16 +358,20 @@
 
     <!-- HOME (linux) -->
     <section class="view" id="home">
+      <button class="iswitch" data-switch aria-label="Back to interface picker">&#8644; switch</button>
       <div class="greet">user@<b>gazéifié</b>:~$</div>
       <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
       <div class="apps" id="applist"></div>
+      <div class="dock" id="dock"></div>
     </section>
 
     <!-- HOME (android) -->
     <section class="view" id="home-android">
+      <button class="iswitch" data-switch aria-label="Back to interface picker">&#8644; switch</button>
       <div class="ahome-clock" id="ahomeClock">--:--</div>
       <div class="ahome-date" id="ahomeDate"></div>
       <div class="agrid" id="applist-android"></div>
+      <div class="dock" id="dock-android"></div>
     </section>
 
     <!-- TERMINAL -->
@@ -290,7 +388,11 @@
 
     <!-- FILES -->
     <section class="view" id="files">
-      <div class="titlebar"><span class="dot"></span><span class="path" id="filepath">/home/user</span></div>
+      <div class="titlebar">
+        <span class="dot"></span><span class="path" id="filepath">/home/user</span>
+        <button class="tbtn" id="newdir">+ folder</button>
+        <button class="tbtn" id="newfile">+ file</button>
+      </div>
       <div class="body" id="filebody"></div>
     </section>
 
@@ -323,6 +425,32 @@
         <div class="setrow" style="border:0">
           <div><div class="lab">Build</div><div class="sub" id="buildsub">gazéifié 0.1 &middot; kernel 6.9.0-arm64</div></div>
         </div>
+      </div>
+    </section>
+
+    <!-- CALCULATOR -->
+    <section class="view" id="calc">
+      <div class="titlebar"><span class="dot"></span><span class="path">calculator</span></div>
+      <div id="calcwrap">
+        <div id="calcout">
+          <div id="calcexpr"></div>
+          <div id="calcval">0</div>
+        </div>
+        <div id="calcpad"></div>
+      </div>
+    </section>
+
+    <!-- STOPWATCH -->
+    <section class="view" id="clock">
+      <div class="titlebar"><span class="dot"></span><span class="path">stopwatch</span></div>
+      <div id="swwrap">
+        <div id="swtime">00:00<small>.00</small></div>
+        <div id="swbtns">
+          <button class="btn" id="swStart">Start</button>
+          <button class="btn" id="swLap">Lap</button>
+          <button class="btn" id="swReset">Reset</button>
+        </div>
+        <div id="swlaps"></div>
       </div>
     </section>
 
@@ -384,6 +512,7 @@ function show(id){
   if(id === "terminal") setTimeout(()=>document.getElementById("terminput").focus(), 60);
   if(id === "files") renderFiles();
   if(id === "about") renderAbout();
+  if(id === "clock") renderLaps();
 }
 document.getElementById("homebtn").addEventListener("click", ()=>{
   document.getElementById("terminput").blur();
@@ -413,7 +542,16 @@ function choosePlatform(p){
 }
 document.getElementById("pick-linux").addEventListener("click", ()=> choosePlatform("linux"));
 document.getElementById("pick-android").addEventListener("click", ()=> choosePlatform("android"));
-document.getElementById("switchbtn").addEventListener("click", ()=> show("picker"));
+function toPicker(){
+  document.getElementById("terminput").blur();
+  PLATFORM = null;
+  document.getElementById("device").removeAttribute("data-platform");
+  const psub = document.getElementById("platformsub");
+  if(psub) psub.textContent = "—";
+  show("picker");
+}
+document.getElementById("switchbtn").addEventListener("click", toPicker);
+document.querySelectorAll("[data-switch]").forEach(b => b.addEventListener("click", toPicker));
 
 /* ============ status bar ============ */
 function pad(n){ return String(n).padStart(2,"0"); }
@@ -489,6 +627,8 @@ const APPS = [
   {id:"terminal", glyph:"~$", name:"terminal", desc:"shell with a real command parser"},
   {id:"files",    glyph:"/",  name:"files",    desc:"browse the in-memory filesystem"},
   {id:"notes",    glyph:"✎",  name:"notes",    desc:"scratchpad, writes to ~/notes.txt"},
+  {id:"calc",     glyph:"=",  name:"calc",     desc:"arithmetic, keypad, running total"},
+  {id:"clock",    glyph:"◴",  name:"clock",    desc:"stopwatch with lap times"},
   {id:"settings", glyph:"⚙",  name:"settings", desc:"accent, hostname, restart"},
   {id:"about",    glyph:"i",  name:"about",    desc:"device + browser info"}
 ];
@@ -501,7 +641,8 @@ APPS.forEach(a=>{
   list.appendChild(b);
 });
 
-const APP_COLORS = { terminal:"#333333", files:"#f2b632", notes:"#3ea1e0", settings:"#78909c", about:"#8bc34a" };
+const APP_COLORS = { terminal:"#333333", files:"#f2b632", notes:"#3ea1e0", calc:"#e0698a",
+                     clock:"#7e57c2", settings:"#78909c", about:"#8bc34a" };
 const alist = document.getElementById("applist-android");
 APPS.forEach(a=>{
   const b = document.createElement("button");
@@ -510,6 +651,146 @@ APPS.forEach(a=>{
   b.addEventListener("click", ()=>show(a.id));
   alist.appendChild(b);
 });
+
+/* ============ dock ============ */
+const DOCK = ["terminal", "files", "notes", "settings"];
+function buildDock(el, coloured){
+  DOCK.forEach(id=>{
+    const a = APPS.find(x => x.id === id);
+    if(!a) return;
+    const b = document.createElement("button");
+    b.className = "dockbtn";
+    b.setAttribute("aria-label", a.name);
+    const style = coloured ? ` style="background:${APP_COLORS[a.id] || "#555"}"` : "";
+    b.innerHTML = `<span class="dk-glyph"${style}>${a.glyph}</span><span class="dk-label">${a.name}</span>`;
+    b.addEventListener("click", ()=> show(a.id));
+    el.appendChild(b);
+  });
+}
+buildDock(document.getElementById("dock"), false);
+buildDock(document.getElementById("dock-android"), true);
+
+/* ============ calculator ============ */
+const KEYS = [
+  ["C","fn"],["\u232b","fn"],["%","fn"],["\u00f7","op"],
+  ["7",""],["8",""],["9",""],["\u00d7","op"],
+  ["4",""],["5",""],["6",""],["\u2212","op"],
+  ["1",""],["2",""],["3",""],["+","op"],
+  ["\u00b1","fn"],["0",""],[".",""],["=","eq"]
+];
+let cAcc = null, cOp = null, cCur = "0", cFresh = true;
+const cVal = document.getElementById("calcval");
+const cExp = document.getElementById("calcexpr");
+
+function fmt(n){
+  if(!isFinite(n)) return "error";
+  const r = Math.round(n * 1e10) / 1e10;
+  return Math.abs(r) >= 1e12 ? r.toExponential(6) : String(r);
+}
+function calcDraw(){
+  cVal.textContent = cCur;
+  cExp.textContent = cOp ? fmt(cAcc)+" "+cOp : "";
+}
+function apply(a, op, b){
+  if(op === "+") return a + b;
+  if(op === "\u2212") return a - b;
+  if(op === "\u00d7") return a * b;
+  if(op === "\u00f7") return b === 0 ? NaN : a / b;
+  return b;
+}
+function calcKey(k){
+  if(/[0-9]/.test(k)){
+    cCur = (cFresh || cCur === "0") ? k : cCur + k;
+    cFresh = false;
+  } else if(k === "."){
+    if(cFresh){ cCur = "0."; cFresh = false; }
+    else if(!cCur.includes(".")) cCur += ".";
+  } else if(k === "C"){
+    cAcc = null; cOp = null; cCur = "0"; cFresh = true;
+  } else if(k === "\u232b"){
+    cCur = cCur.length > 1 ? cCur.slice(0, -1) : "0";
+    if(cCur === "0") cFresh = true;
+  } else if(k === "\u00b1"){
+    cCur = cCur.startsWith("-") ? cCur.slice(1) : "-"+cCur;
+  } else if(k === "%"){
+    cCur = fmt(parseFloat(cCur) / 100); cFresh = true;
+  } else if(k === "="){
+    if(cOp !== null){
+      cCur = fmt(apply(cAcc, cOp, parseFloat(cCur)));
+      cAcc = null; cOp = null;
+    }
+    cFresh = true;
+  } else { // an operator
+    const v = parseFloat(cCur);
+    cAcc = (cOp !== null && !cFresh) ? apply(cAcc, cOp, v) : v;
+    cCur = fmt(cAcc);
+    cOp = k; cFresh = true;
+  }
+  calcDraw();
+}
+const cpad = document.getElementById("calcpad");
+KEYS.forEach(([label, cls])=>{
+  const b = document.createElement("button");
+  b.className = "ckey" + (cls ? " "+cls : "");
+  b.textContent = label;
+  b.addEventListener("click", ()=>calcKey(label));
+  cpad.appendChild(b);
+});
+calcDraw();
+
+/* ============ stopwatch ============ */
+let swRun = false, swBase = 0, swElapsed = 0, swTimer = null, swLaps = [], swLast = 0;
+const swTime = document.getElementById("swtime");
+
+function swFmt(ms){
+  const cs = Math.floor(ms / 10) % 100;
+  const sec = Math.floor(ms / 1000) % 60;
+  const min = Math.floor(ms / 60000);
+  return pad(min)+":"+pad(sec)+"<small>."+pad(cs)+"</small>";
+}
+function swDraw(){
+  const ms = swElapsed + (swRun ? Date.now() - swBase : 0);
+  swTime.innerHTML = swFmt(ms);
+}
+function renderLaps(){
+  const box = document.getElementById("swlaps");
+  box.innerHTML = "";
+  swLaps.slice().reverse().forEach((l, i)=>{
+    const d = document.createElement("div");
+    d.className = "lap";
+    const n = document.createElement("span");
+    n.className = "n"; n.textContent = "lap "+(swLaps.length - i);
+    const t = document.createElement("span");
+    t.innerHTML = swFmt(l);
+    d.append(n, t);
+    box.appendChild(d);
+  });
+}
+document.getElementById("swStart").addEventListener("click", function(){
+  if(swRun){
+    swElapsed += Date.now() - swBase;
+    swRun = false; clearInterval(swTimer);
+    this.textContent = "Start";
+  } else {
+    swBase = Date.now(); swRun = true;
+    swTimer = setInterval(swDraw, 31);
+    this.textContent = "Stop";
+  }
+  swDraw();
+});
+document.getElementById("swLap").addEventListener("click", ()=>{
+  const ms = swElapsed + (swRun ? Date.now() - swBase : 0);
+  if(!ms) return;
+  swLaps.push(ms - swLast); swLast = ms;
+  renderLaps();
+});
+document.getElementById("swReset").addEventListener("click", ()=>{
+  swRun = false; clearInterval(swTimer);
+  swElapsed = 0; swLast = 0; swLaps = [];
+  document.getElementById("swStart").textContent = "Start";
+  swDraw(); renderLaps();
+});
+swDraw();
 
 /* ============ filesystem helpers ============ */
 function resolve(path, cwd){
@@ -553,11 +834,13 @@ function setPS1(){ document.getElementById("ps1").textContent = pretty(cwd)+"$";
 
 const CMDS = {
   help(){
-    println("commands:");
-    println("  ls [dir]      cd <dir>      pwd        cat <file>");
-    println("  mkdir <dir>   touch <file>  rm <path>  echo <text>");
-    println("  whoami        uname [-a]    date       uptime");
-    println("  neofetch      open <app>    clear      exit");
+    println("navigate:  ls [dir]   cd <dir>   pwd        tree [dir]");
+    println("files:     cat <f>    head <f>   tail <f>   wc <f>");
+    println("           mkdir <d>  touch <f>  rm <path>  write <f> <text>");
+    println("           cp <a> <b> mv <a> <b> grep <pat> <f>");
+    println("system:    whoami     uname [-a] date       uptime");
+    println("           ps         df         neofetch   history");
+    println("shell:     echo <t>   theme <c>  open <app> clear     exit");
   },
   ls(args){
     const target = args[0] ? resolve(args[0], cwd) : cwd;
@@ -630,8 +913,103 @@ const CMDS = {
     if(!a) return println("open: unknown app: "+(args[0]||""),"err");
     show(a.id);
   },
+  tree(args){
+    const root = args[0] ? resolve(args[0], cwd) : cwd;
+    const n = nodeAt(root);
+    if(!isDir(n)) return println("tree: not a directory","err");
+    let dirs = 0, files = 0;
+    println(pretty(root));
+    (function walk(node, prefix){
+      const keys = Object.keys(node);
+      keys.forEach((k, i)=>{
+        const last = i === keys.length - 1;
+        println(prefix + (last ? "└── " : "├── ") + k + (isDir(node[k]) ? "/" : ""));
+        if(isDir(node[k])){ dirs++; walk(node[k], prefix + (last ? "    " : "│   ")); }
+        else files++;
+      });
+    })(n, "");
+    println("");
+    println(dirs+" directories, "+files+" files","muted");
+  },
+  head(args){ headtail(args, "head"); },
+  tail(args){ headtail(args, "tail"); },
+  wc(args){
+    const n = nodeAt(resolve(args[0]||"", cwd));
+    if(typeof n !== "string") return println("wc: "+(args[0]||"")+": no such file","err");
+    const lines = n ? n.replace(/\n$/,"").split("\n").length : 0;
+    const words = n.split(/\s+/).filter(Boolean).length;
+    println("  "+lines+"  "+words+"  "+n.length+"  "+args[0]);
+  },
+  grep(args){
+    if(args.length < 2) return println("grep: usage: grep <pattern> <file>","err");
+    const pat = args[0];
+    const n = nodeAt(resolve(args[1], cwd));
+    if(typeof n !== "string") return println("grep: "+args[1]+": no such file","err");
+    const hits = n.split("\n").filter(l => l.toLowerCase().includes(pat.toLowerCase()));
+    if(!hits.length) return println("(no matches)","muted");
+    hits.forEach(l => println(l));
+  },
+  cp(args){ copymove(args, false); },
+  mv(args){ copymove(args, true); },
+  write(args){
+    if(args.length < 2) return println("write: usage: write <file> <text>","err");
+    const t = resolve(args[0], cwd), name = t.pop(), parent = nodeAt(t);
+    if(!isDir(parent)) return println("write: bad path","err");
+    if(isDir(parent[name])) return println("write: "+args[0]+": is a directory","err");
+    parent[name] = args.slice(1).join(" ") + "\n";
+    println("wrote "+parent[name].length+" B to "+args[0],"muted");
+  },
+  ps(){
+    println("  PID TTY      TIME     CMD");
+    [["1","?","00:00:01","init"],["42","tty1","00:00:00","display-manager"],
+     ["77","tty1","00:00:00","sh"],["98","tty1","00:00:00","ps"]]
+      .forEach(([p,t,c,m]) => println("  "+p.padStart(3)+" "+t.padEnd(8)+" "+c+" "+m));
+  },
+  df(){
+    const used = JSON.stringify(FS).length;
+    println("Filesystem     Size   Used  Avail  Use%  Mounted on");
+    println("tmpfs          64K    "+String(used).padStart(4)+"B  "+(65536-used)+"B    "+
+            Math.round(used/65536*100)+"%   /");
+  },
+  history(){
+    if(!history.length) return println("(no history)","muted");
+    history.forEach((h, i) => println("  "+String(i+1).padStart(3)+"  "+h));
+  },
+  theme(args){
+    const map = {amber:"#f2a25c", cyan:"#6fd3c7", rose:"#e0698a", violet:"#a48ce0", lime:"#9fd356"};
+    const c = map[(args[0]||"").toLowerCase()];
+    if(!c) return println("theme: pick one of: "+Object.keys(map).join(", "),"err");
+    setAccent(c);
+    println("accent set to "+args[0],"muted");
+  },
+  sudo(args){
+    println("this incident will be reported.","warn");
+    if(args.length) println("(you already own this device — just run `"+args.join(" ")+"`)","muted");
+  },
   exit(){ println("logging out…","muted"); setTimeout(()=>show(homeViewId()), 350); }
 };
+
+function headtail(args, mode){
+  const n = nodeAt(resolve(args[0]||"", cwd));
+  if(typeof n !== "string") return println(mode+": "+(args[0]||"")+": no such file","err");
+  const lines = n.replace(/\n$/,"").split("\n");
+  const part = mode === "head" ? lines.slice(0, 10) : lines.slice(-10);
+  part.forEach(l => println(l));
+}
+function copymove(args, remove){
+  const verb = remove ? "mv" : "cp";
+  if(args.length < 2) return println(verb+": usage: "+verb+" <source> <dest>","err");
+  const src = resolve(args[0], cwd), sname = src[src.length-1];
+  const node = nodeAt(src);
+  if(node === null) return println(verb+": "+args[0]+": no such file or directory","err");
+  let dst = resolve(args[1], cwd);
+  const dnode = nodeAt(dst);
+  const parent = isDir(dnode) ? dnode : nodeAt(dst.slice(0, -1));
+  const name = isDir(dnode) ? sname : dst[dst.length-1];
+  if(!isDir(parent)) return println(verb+": "+args[1]+": bad destination","err");
+  parent[name] = isDir(node) ? JSON.parse(JSON.stringify(node)) : node;
+  if(remove) delete nodeAt(src.slice(0, -1))[sname];
+}
 
 function run(raw){
   const line = raw.trim();
@@ -659,33 +1037,51 @@ function renderFiles(){
   const n = nodeAt(fcwd);
   body.innerHTML = "";
   if(fcwd.length){
-    body.appendChild(row("..", "↑", "", ()=>{ fcwd.pop(); renderFiles(); }));
+    body.appendChild(row("..", "\u2191", "", ()=>{ fcwd.pop(); renderFiles(); }));
   }
   const keys = Object.keys(n);
   if(!keys.length){
     const e = document.createElement("div");
     e.className = "muted"; e.style.paddingTop = "12px";
-    e.textContent = "Nothing here yet. Create something with `mkdir` or `touch` in the terminal.";
+    e.textContent = "Nothing here yet. Use + folder or + file above.";
     body.appendChild(e); return;
   }
   keys.forEach(k=>{
     const child = n[k];
-    if(isDir(child)) body.appendChild(row(k+"/", "▸", Object.keys(child).length+" items", ()=>{ fcwd.push(k); renderFiles(); }));
-    else body.appendChild(row(k, "·", child.length+" B", ()=>viewFile(k, child)));
+    const r = isDir(child)
+      ? row(k+"/", "\u25b8", Object.keys(child).length+" items", ()=>{ fcwd.push(k); renderFiles(); })
+      : row(k, "\u00b7", child.length+" B", ()=>viewFile(k, child));
+    r.appendChild(delBtn(k));
+    body.appendChild(r);
   });
 }
 function row(label, glyph, size, onclick){
   const d = document.createElement("div");
   d.className = "row";
-  d.innerHTML = `<span class="k">${glyph}</span><span>${label}</span><span class="sz">${size}</span>`;
+  const g = document.createElement("span"); g.className = "k"; g.textContent = glyph;
+  const l = document.createElement("span"); l.textContent = label;   // textContent: filenames can't inject markup
+  const z = document.createElement("span"); z.className = "sz"; z.textContent = size;
+  d.append(g, l, z);
   d.addEventListener("click", onclick);
   return d;
+}
+function delBtn(name){
+  const b = document.createElement("button");
+  b.className = "del"; b.textContent = "\u2715";
+  b.setAttribute("aria-label", "Delete "+name);
+  b.addEventListener("click", e=>{
+    e.stopPropagation();
+    if(!confirm("Delete "+name+"?")) return;
+    delete nodeAt(fcwd)[name];
+    renderFiles();
+  });
+  return b;
 }
 function viewFile(name, content){
   const body = document.getElementById("filebody");
   document.getElementById("filepath").textContent = pretty(fcwd)+"/"+name;
   body.innerHTML = "";
-  body.appendChild(row("back", "↑", "", renderFiles));
+  body.appendChild(row("back", "\u2191", "", renderFiles));
   const pre = document.createElement("div");
   pre.style.whiteSpace = "pre-wrap";
   pre.style.paddingTop = "12px";
@@ -693,6 +1089,17 @@ function viewFile(name, content){
   if(!content) pre.className = "muted";
   body.appendChild(pre);
 }
+function create(kind){
+  const name = prompt("Name of the new "+kind+":");
+  if(!name) return;
+  if(/[\/\\]/.test(name)) return alert("Names can't contain slashes.");
+  const parent = nodeAt(fcwd);
+  if(name in parent) return alert(name+" already exists here.");
+  parent[name] = kind === "folder" ? {} : "";
+  renderFiles();
+}
+document.getElementById("newdir").addEventListener("click", ()=>create("folder"));
+document.getElementById("newfile").addEventListener("click", ()=>create("file"));
 
 /* ============ notes ============ */
 const pad2 = document.getElementById("notepad");
@@ -702,15 +1109,18 @@ pad2.addEventListener("input", ()=>{ FS.home[USER]["notes.txt"] = pad2.value; })
 /* ============ settings ============ */
 const ACCENTS = ["#f2a25c","#6fd3c7","#e0698a","#a48ce0","#9fd356"];
 const sw = document.getElementById("swatches");
+/* set on #device, not :root — the skin selectors also define --accent,
+   and an inline style on the element is the only thing that outranks them */
+function setAccent(c){
+  document.getElementById("device").style.setProperty("--accent", c);
+  [...sw.children].forEach(x => x.setAttribute("aria-pressed", String(x.dataset.c === c)));
+}
 ACCENTS.forEach((c,i)=>{
   const b = document.createElement("button");
-  b.className = "sw"; b.style.background = c;
-  b.setAttribute("aria-pressed", i===0); b.setAttribute("aria-label","Accent "+c);
-  b.addEventListener("click", ()=>{
-    document.documentElement.style.setProperty("--accent", c);
-    [...sw.children].forEach(x => x.setAttribute("aria-pressed","false"));
-    b.setAttribute("aria-pressed","true");
-  });
+  b.className = "sw"; b.style.background = c; b.dataset.c = c;
+  b.setAttribute("aria-pressed", String(i === 0));
+  b.setAttribute("aria-label", "Accent "+c);
+  b.addEventListener("click", ()=> setAccent(c));
   sw.appendChild(b);
 });
 document.getElementById("renamebtn").addEventListener("click", ()=>{
