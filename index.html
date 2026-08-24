@@ -100,6 +100,48 @@
   .app .desc{font-size:10px;color:var(--dim);line-height:1.4}
   .app:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+  #toast{
+    position:absolute;left:50%;bottom:16px;transform:translate(-50%,10px);
+    background:rgba(4,8,18,.92);border:1px solid var(--line);color:var(--text);
+    font-family:var(--mono);font-size:11px;padding:9px 13px;z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;
+  }
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- desktop window manager ---------- */
+  #wm{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .win{
+    position:absolute;pointer-events:auto;display:flex;flex-direction:column;
+    background:var(--shell);border:1px solid var(--line);
+    box-shadow:0 18px 40px rgba(0,0,0,.55);
+    overflow:hidden;min-height:0;
+  }
+  .win.min{display:none}
+  .win.focused{border-color:color-mix(in srgb, var(--accent) 55%, var(--line))}
+  /* the app section becomes the window's content */
+  .win > .view{position:static;inset:auto;display:flex;flex:1 1 auto;min-height:0}
+  /* the app's own titlebar doubles as the drag handle */
+  .win > .view > .titlebar{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+  .win.dragging > .view > .titlebar{cursor:grabbing}
+  .wbtn{
+    background:none;border:0;color:var(--dim);font-family:var(--mono);font-size:13px;
+    line-height:1;padding:2px 4px;cursor:pointer;flex:0 0 auto;
+  }
+  .wbtn:active{color:var(--accent)}
+  .wbtn.close:active{color:var(--rose)}
+  /* taskbar for open windows, sits above the dock */
+  #taskbar{
+    flex:0 0 auto;display:flex;gap:6px;align-items:center;
+    padding:6px 0 0;min-height:0;
+  }
+  #taskbar:empty{display:none}
+  .task{
+    flex:1;background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    font-family:var(--mono);font-size:10px;padding:6px 4px;cursor:pointer;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .task.active{color:var(--accent);border-color:color-mix(in srgb, var(--accent) 45%, var(--line))}
+
   /* ---------- calculator ---------- */
   #calcwrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
   #calcout{
@@ -362,6 +404,7 @@
       <div class="greet">user@<b>gazéifié</b>:~$</div>
       <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
       <div class="apps" id="applist"></div>
+      <div id="taskbar"></div>
       <div class="dock" id="dock"></div>
     </section>
 
@@ -460,6 +503,9 @@
       <div class="body" id="aboutbody"></div>
     </section>
 
+    <!-- floating windows live here (desktop skin only) -->
+    <div id="wm"></div>
+
   </div>
 
   <div id="navbar" class="hidden"><button id="homebtn" aria-label="Home"></button></div>
@@ -503,7 +549,9 @@ let PLATFORM = null; // "linux" | "android"
 function homeViewId(){ return PLATFORM === "android" ? "home-android" : "home"; }
 
 function show(id){
-  Object.values(views).forEach(v => v.classList.remove("on"));
+  // desktop: apps open as floating windows instead of full-screen views
+  if(PLATFORM === "linux" && WIN_APPS.includes(id)) return openWindow(id);
+  Object.values(views).forEach(v => { if(!v.closest(".win")) v.classList.remove("on"); });
   views[id].classList.add("on");
   current = id;
   const chromeless = (id === "boot" || id === "boot-android" || id === "picker");
@@ -516,6 +564,14 @@ function show(id){
 }
 document.getElementById("homebtn").addEventListener("click", ()=>{
   document.getElementById("terminput").blur();
+  const open = Object.keys(wins);
+  if(open.length){
+    // show the desktop without discarding anything: minimise, don't close
+    open.forEach(minimiseWindow);
+    current = homeViewId();
+    renderTaskbar();
+    return;
+  }
   show(homeViewId());
 });
 document.getElementById("androidHome").addEventListener("click", ()=>{
@@ -544,6 +600,7 @@ document.getElementById("pick-linux").addEventListener("click", ()=> choosePlatf
 document.getElementById("pick-android").addEventListener("click", ()=> choosePlatform("android"));
 function toPicker(){
   document.getElementById("terminput").blur();
+  closeAllWindows();
   PLATFORM = null;
   document.getElementById("device").removeAttribute("data-platform");
   const psub = document.getElementById("platformsub");
@@ -598,6 +655,7 @@ const BOOT_LINES = [
   ["  welcome back.",""]
 ];
 function boot(){
+  closeAllWindows();
   show("boot");
   const log = document.getElementById("bootlog");
   const cur = document.getElementById("cursorline");
@@ -669,6 +727,171 @@ function buildDock(el, coloured){
 }
 buildDock(document.getElementById("dock"), false);
 buildDock(document.getElementById("dock-android"), true);
+
+/* ============ desktop window manager ============ */
+const MAX_WINDOWS = 3;
+const WIN_APPS = ["terminal","files","notes","calc","clock","settings","about"];
+const wmLayer = document.getElementById("wm");
+const taskbar = document.getElementById("taskbar");
+let wins = {};       // id -> {el, x, y, min}
+let zTop = 10;
+
+const WIN_SIZE = {
+  terminal:{w:300,h:340}, files:{w:290,h:320}, notes:{w:280,h:300},
+  calc:{w:250,h:360},     clock:{w:260,h:300}, settings:{w:300,h:340},
+  about:{w:290,h:300}
+};
+
+function wmBounds(){
+  const s = document.getElementById("screen").getBoundingClientRect();
+  return {w:s.width, h:s.height};
+}
+function clampWin(w){
+  const b = wmBounds(), r = w.el.getBoundingClientRect();
+  // keep at least a corner of the title bar reachable
+  w.x = Math.max(-r.width + 64, Math.min(w.x, b.w - 48));
+  w.y = Math.max(0, Math.min(w.y, b.h - 34));
+  w.el.style.left = w.x + "px";
+  w.el.style.top  = w.y + "px";
+}
+function focusWin(id){
+  const w = wins[id]; if(!w) return;
+  w.min = false;
+  w.el.classList.remove("min");
+  w.el.style.zIndex = ++zTop;
+  Object.keys(wins).forEach(k => wins[k].el.classList.toggle("focused", k === id));
+  current = id;
+  renderTaskbar();
+}
+function openWindow(id){
+  if(wins[id]){ focusWin(id); afterOpen(id); return; }
+  const open = Object.keys(wins);
+  if(open.length >= MAX_WINDOWS){
+    toast("Up to " + MAX_WINDOWS + " windows. Close one first.");
+    return;
+  }
+  const view = views[id];
+  const el = document.createElement("div");
+  el.className = "win";
+  el.dataset.app = id;
+
+  const size = WIN_SIZE[id] || {w:290,h:320};
+  const b = wmBounds();
+  const w = Math.min(size.w, b.w - 16);
+  const h = Math.min(size.h, b.h - 16);
+  el.style.width = w + "px";
+  el.style.height = h + "px";
+
+  // cascade from the top-left, wrapping if it would run off
+  const step = 22 * open.length;
+  const st = {el, x: Math.min(10 + step, Math.max(4, b.w - w - 4)),
+                  y: Math.min(10 + step, Math.max(4, b.h - h - 4)), min:false};
+
+  view.classList.add("on");         // .win > .view is always laid out
+  el.appendChild(view);
+  wmLayer.appendChild(el);
+  wins[id] = st;
+
+  addWinControls(view, id);
+  makeDraggable(el, id);
+  el.addEventListener("pointerdown", ()=>focusWin(id));
+  clampWin(st);
+  focusWin(id);
+  afterOpen(id);
+}
+function afterOpen(id){
+  if(id === "terminal") setTimeout(()=>document.getElementById("terminput").focus(), 60);
+  if(id === "files") renderFiles();
+  if(id === "about") renderAbout();
+  if(id === "clock") renderLaps();
+}
+function addWinControls(view, id){
+  const bar = view.querySelector(".titlebar");
+  if(bar.querySelector(".wbtn")) return;   // already fitted
+  const min = document.createElement("button");
+  min.className = "wbtn"; min.textContent = "\u2013";
+  min.setAttribute("aria-label", "Minimise");
+  min.addEventListener("click", e=>{ e.stopPropagation(); minimiseWindow(id); });
+  const close = document.createElement("button");
+  close.className = "wbtn close"; close.textContent = "\u2715";
+  close.setAttribute("aria-label", "Close");
+  close.addEventListener("click", e=>{ e.stopPropagation(); closeWindow(id); });
+  bar.append(min, close);
+}
+function minimiseWindow(id){
+  const w = wins[id]; if(!w) return;
+  w.min = true; w.el.classList.add("min");
+  renderTaskbar();
+}
+function closeWindow(id){
+  const w = wins[id]; if(!w) return;
+  const view = views[id];
+  view.classList.remove("on");
+  document.getElementById("screen").appendChild(view);   // park it back
+  w.el.remove();
+  delete wins[id];
+  if(id === "clock"){ /* stopwatch keeps running in the background, by design */ }
+  current = homeViewId();
+  renderTaskbar();
+}
+function closeAllWindows(){ Object.keys(wins).forEach(closeWindow); }
+
+function makeDraggable(el, id){
+  const bar = el.querySelector(".titlebar");
+  let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false;
+  bar.addEventListener("pointerdown", e=>{
+    if(e.target.closest(".wbtn")) return;
+    dragging = true;
+    const w = wins[id];
+    sx = e.clientX; sy = e.clientY; ox = w.x; oy = w.y;
+    el.classList.add("dragging");
+    try{ bar.setPointerCapture(e.pointerId); }catch(_){}
+    e.preventDefault();
+  });
+  bar.addEventListener("pointermove", e=>{
+    if(!dragging) return;
+    const w = wins[id];
+    w.x = ox + (e.clientX - sx);
+    w.y = oy + (e.clientY - sy);
+    clampWin(w);
+  });
+  const stop = e=>{
+    if(!dragging) return;
+    dragging = false;
+    el.classList.remove("dragging");
+    try{ bar.releasePointerCapture(e.pointerId); }catch(_){}
+  };
+  bar.addEventListener("pointerup", stop);
+  bar.addEventListener("pointercancel", stop);
+}
+
+function renderTaskbar(){
+  taskbar.innerHTML = "";
+  Object.keys(wins).forEach(id=>{
+    const b = document.createElement("button");
+    b.className = "task" + (current === id && !wins[id].min ? " active" : "");
+    b.textContent = (wins[id].min ? "\u25ab " : "") + (APPS.find(a=>a.id===id)||{}).name;
+    b.addEventListener("click", ()=>{
+      if(wins[id].min || current !== id) focusWin(id);
+      else minimiseWindow(id);
+    });
+    taskbar.appendChild(b);
+  });
+}
+
+let toastTimer = null;
+function toast(msg){
+  let t = document.getElementById("toast");
+  if(!t){
+    t = document.createElement("div");
+    t.id = "toast";
+    document.getElementById("screen").appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("on"), 1900);
+}
 
 /* ============ calculator ============ */
 const KEYS = [
@@ -986,7 +1209,13 @@ const CMDS = {
     println("this incident will be reported.","warn");
     if(args.length) println("(you already own this device — just run `"+args.join(" ")+"`)","muted");
   },
-  exit(){ println("logging out…","muted"); setTimeout(()=>show(homeViewId()), 350); }
+  exit(){
+    println("logging out…","muted");
+    setTimeout(()=>{
+      if(PLATFORM === "linux" && wins.terminal) closeWindow("terminal");
+      else show(homeViewId());
+    }, 350);
+  }
 };
 
 function headtail(args, mode){
