@@ -3,15 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>gazeifié</title>
+<title>gazéifié</title>
 
 <!-- homescreen / PWA bits -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="gazeifié">
+<meta name="apple-mobile-web-app-title" content="gazéifié">
 <meta name="theme-color" content="#17141d">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2317141d'/%3E%3Ctext x='50%25' y='53%25' text-anchor='middle' dominant-baseline='middle' font-family='monospace' font-size='96' font-weight='700' fill='%23f2a25c'%3EG%3C/text%3E%3C/svg%3E">
+<!-- iOS homescreen icon: must be a real PNG file, 180x180. iOS ignores SVG here. -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<!-- browser tab icon: inline SVG, same wrench -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2317141d'/%3E%3Cg transform='rotate(-42 90 90)' fill='%23f2a25c'%3E%3Cpath d='M44 78h92v24H44z'/%3E%3Cpath d='M136 60a30 30 0 0 1 0 60 30 30 0 0 1-15-4v-13h15v-26h-15V64a30 30 0 0 1 15-4z'/%3E%3Cpath d='M44 60a30 30 0 0 0 0 60 30 30 0 0 0 15-4v-13H44V77h15V64a30 30 0 0 0-15-4z'/%3E%3C/g%3E%3C/svg%3E">
 
 <style>
   :root{
@@ -154,18 +157,27 @@
   #navbar.hidden{display:none}
 
   /* ---------- picker (startup) ---------- */
-  #picker{background:var(--void);padding:20px;justify-content:center;gap:14px}
-  .pick-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:10px}
-  .pickbtn{
-    background:var(--panel);border:1px solid var(--line);color:var(--text);
-    font-family:var(--mono);text-align:left;cursor:pointer;
-    display:flex;flex-direction:column;gap:4px;padding:16px;
-    transition:border-color .15s,transform .1s;
+  #picker{
+    background:
+      radial-gradient(120% 90% at 50% 0%, #1b3a6b 0%, rgba(27,58,107,0) 65%),
+      linear-gradient(#0d1830 0%, #0a1024 55%, #070b18 100%);
+    padding:20px;justify-content:center;gap:14px;
   }
-  .pickbtn:active{transform:scale(.98);border-color:var(--accent)}
-  .pickbtn .pk-glyph{font-size:20px;color:var(--accent)}
-  .pickbtn .pk-name{font-size:14px;font-weight:600}
-  .pickbtn .pk-desc{font-size:10.5px;color:var(--dim);line-height:1.4;font-family:var(--sans)}
+  .pick-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#7f93bd;text-align:center;margin-bottom:14px}
+  .pickgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .pickbtn{
+    aspect-ratio:1;
+    background:rgba(255,255,255,.04);border:1px solid rgba(140,170,220,.22);
+    color:var(--text);font-family:var(--mono);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    padding:14px 10px;text-align:center;
+    transition:border-color .15s,background .15s,transform .1s;
+  }
+  .pickbtn:active{transform:scale(.97);border-color:var(--accent);background:rgba(255,255,255,.07)}
+  .pickbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pickbtn .pk-glyph{font-size:26px;color:var(--accent);line-height:1}
+  .pickbtn .pk-name{font-size:14px;font-weight:600;letter-spacing:.02em}
+  .pickbtn .pk-desc{font-size:10px;color:#8c9dc2;line-height:1.35;font-family:var(--sans)}
 
   /* ---------- android platform ---------- */
   #device[data-platform="android"]{
@@ -224,16 +236,18 @@
     <!-- PICKER (startup) -->
     <section class="view on" id="picker">
       <div class="pick-title">choose an interface</div>
-      <button class="pickbtn" id="pick-linux">
-        <span class="pk-glyph">~$</span>
-        <span class="pk-name">Linux</span>
-        <span class="pk-desc">gazéifié &mdash; boot log, shell, in-memory filesystem</span>
-      </button>
-      <button class="pickbtn" id="pick-android">
-        <span class="pk-glyph">&#9638;</span>
-        <span class="pk-name">Android <small>(2010s)</small></span>
-        <span class="pk-desc">Holo-style launcher, app grid, on-screen nav bar</span>
-      </button>
+      <div class="pickgrid">
+        <button class="pickbtn" id="pick-linux">
+          <span class="pk-glyph">~$</span>
+          <span class="pk-name">Desktop</span>
+          <span class="pk-desc">Boot log, shell, filesystem</span>
+        </button>
+        <button class="pickbtn" id="pick-android">
+          <span class="pk-glyph">&#9638;</span>
+          <span class="pk-name">Phone OS</span>
+          <span class="pk-desc">Launcher, app grid, nav bar</span>
+        </button>
+      </div>
     </section>
 
     <!-- BOOT (linux) -->
@@ -390,7 +404,7 @@ function choosePlatform(p){
   PLATFORM = p;
   document.getElementById("device").setAttribute("data-platform", p);
   const psub = document.getElementById("platformsub");
-  if(psub) psub.textContent = p === "android" ? "Android (2010s)" : "Linux";
+  if(psub) psub.textContent = p === "android" ? "Phone OS" : "Desktop";
   const bsub = document.getElementById("buildsub");
   if(bsub) bsub.textContent = p === "android"
     ? "Android 4.0.4 (ICS) · kernel 3.0.8"
