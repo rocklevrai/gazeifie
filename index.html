@@ -26,6 +26,7 @@
     --cyan:#6fd3c7;
     --rose:#e0698a;
     --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+    --sans:-apple-system,"Segoe UI",Roboto,"Droid Sans",Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
@@ -152,6 +153,61 @@
   #homebtn:active{background:var(--accent);width:100px}
   #navbar.hidden{display:none}
 
+  /* ---------- picker (startup) ---------- */
+  #picker{background:var(--void);padding:20px;justify-content:center;gap:14px}
+  .pick-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:10px}
+  .pickbtn{
+    background:var(--panel);border:1px solid var(--line);color:var(--text);
+    font-family:var(--mono);text-align:left;cursor:pointer;
+    display:flex;flex-direction:column;gap:4px;padding:16px;
+    transition:border-color .15s,transform .1s;
+  }
+  .pickbtn:active{transform:scale(.98);border-color:var(--accent)}
+  .pickbtn .pk-glyph{font-size:20px;color:var(--accent)}
+  .pickbtn .pk-name{font-size:14px;font-weight:600}
+  .pickbtn .pk-desc{font-size:10.5px;color:var(--dim);line-height:1.4;font-family:var(--sans)}
+
+  /* ---------- android platform ---------- */
+  #device[data-platform="android"]{
+    --accent:#a4c639;--void:#101010;--shell:#1c1c1c;--panel:#262626;
+    --line:#3a3a3a;--text:#eaeaea;--dim:#9a9a9a;
+    font-family:var(--sans);
+  }
+  #device[data-platform="android"] #statusbar{background:#000;padding:calc(env(safe-area-inset-top) + 8px) 16px 6px;color:#ccc}
+  #device[data-platform="android"] #statusbar b{color:#fff}
+  #termbody, #termbody *{font-family:var(--mono)}
+
+  #home-android{padding:0 12px}
+  .ahome-clock{font-size:50px;font-weight:300;text-align:center;margin-top:26px;color:var(--text);font-family:var(--sans)}
+  .ahome-date{font-size:11.5px;text-align:center;color:var(--dim);margin-bottom:22px}
+  .agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px;overflow-y:auto;padding-bottom:20px}
+  .aicon{background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font-family:var(--sans)}
+  .aicon .ai-glyph{
+    width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;color:#fff;font-family:var(--mono);
+  }
+  .aicon:active .ai-glyph{transform:scale(.92)}
+  .aicon .ai-label{font-size:10.5px;text-align:center;line-height:1.2}
+
+  #navbar-android{
+    flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;
+    padding:8px 0 calc(env(safe-area-inset-bottom) + 8px);background:#000;border-top:1px solid #222;
+  }
+  #navbar-android.hidden{display:none}
+  .navkey{background:none;border:0;color:#999;font-size:17px;width:70px;height:34px;cursor:pointer;font-family:var(--mono)}
+  .navkey:active{color:var(--accent)}
+
+  #boot-android{background:#000;align-items:center;justify-content:center;gap:16px}
+  .droid{width:60px;height:36px;background:var(--accent);border-radius:30px 30px 0 0;position:relative;animation:droidpulse 1s ease-in-out infinite}
+  .droid i{position:absolute;top:-12px;width:2px;height:13px;background:var(--accent);display:block}
+  .droid i:first-child{left:15px;transform:rotate(-25deg)}
+  .droid i:last-child{right:15px;transform:rotate(25deg)}
+  .droid em{position:absolute;top:9px;width:6px;height:6px;background:#000;border-radius:50%;font-style:normal}
+  .droid em:first-child{left:15px}
+  .droid em:last-child{right:15px}
+  #boot-android .blabel{color:#888;font-size:11px;letter-spacing:.08em;font-family:var(--sans)}
+  @keyframes droidpulse{0%,100%{opacity:1}50%{opacity:.5}}
+
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -165,17 +221,45 @@
 
   <div id="screen">
 
-    <!-- BOOT -->
-    <section class="view on" id="boot">
+    <!-- PICKER (startup) -->
+    <section class="view on" id="picker">
+      <div class="pick-title">choose an interface</div>
+      <button class="pickbtn" id="pick-linux">
+        <span class="pk-glyph">~$</span>
+        <span class="pk-name">Linux</span>
+        <span class="pk-desc">pocketnix &mdash; boot log, shell, in-memory filesystem</span>
+      </button>
+      <button class="pickbtn" id="pick-android">
+        <span class="pk-glyph">&#9638;</span>
+        <span class="pk-name">Android <small>(2010s)</small></span>
+        <span class="pk-desc">Holo-style launcher, app grid, on-screen nav bar</span>
+      </button>
+    </section>
+
+    <!-- BOOT (linux) -->
+    <section class="view" id="boot">
       <div id="bootlog"></div>
       <div id="cursorline"></div>
     </section>
 
-    <!-- HOME -->
+    <!-- BOOT (android) -->
+    <section class="view" id="boot-android">
+      <div class="droid"><i></i><i></i><em></em><em></em></div>
+      <div class="blabel">starting up&hellip;</div>
+    </section>
+
+    <!-- HOME (linux) -->
     <section class="view" id="home">
       <div class="greet">user@<b>pocketnix</b>:~$</div>
       <div class="uptime" id="uptime">up 0m &middot; load 0.04</div>
       <div class="apps" id="applist"></div>
+    </section>
+
+    <!-- HOME (android) -->
+    <section class="view" id="home-android">
+      <div class="ahome-clock" id="ahomeClock">--:--</div>
+      <div class="ahome-date" id="ahomeDate"></div>
+      <div class="agrid" id="applist-android"></div>
     </section>
 
     <!-- TERMINAL -->
@@ -218,8 +302,12 @@
           <div><div class="lab">Restart</div><div class="sub">Replays the boot sequence</div></div>
           <button class="btn" id="rebootbtn">Restart</button>
         </div>
+        <div class="setrow">
+          <div><div class="lab">Interface</div><div class="sub" id="platformsub">&mdash;</div></div>
+          <button class="btn" id="switchbtn">Switch</button>
+        </div>
         <div class="setrow" style="border:0">
-          <div><div class="lab">Build</div><div class="sub">pocketnix 0.1 &middot; kernel 6.9.0-arm64</div></div>
+          <div><div class="lab">Build</div><div class="sub" id="buildsub">pocketnix 0.1 &middot; kernel 6.9.0-arm64</div></div>
         </div>
       </div>
     </section>
@@ -233,6 +321,11 @@
   </div>
 
   <div id="navbar" class="hidden"><button id="homebtn" aria-label="Home"></button></div>
+  <div id="navbar-android" class="hidden">
+    <button class="navkey" id="androidBack" aria-label="Back">&#9665;</button>
+    <button class="navkey" id="androidHome" aria-label="Home">&#9711;</button>
+    <button class="navkey" id="androidMenu" aria-label="Menu">&#9638;</button>
+  </div>
 </div>
 
 <script>
@@ -262,27 +355,62 @@ const FS = {
 /* ============ view routing ============ */
 const views = {};
 document.querySelectorAll(".view").forEach(v => views[v.id] = v);
-let current = "boot";
+let current = "picker";
+let PLATFORM = null; // "linux" | "android"
+
+function homeViewId(){ return PLATFORM === "android" ? "home-android" : "home"; }
 
 function show(id){
   Object.values(views).forEach(v => v.classList.remove("on"));
   views[id].classList.add("on");
   current = id;
-  document.getElementById("navbar").classList.toggle("hidden", id === "boot");
+  const chromeless = (id === "boot" || id === "boot-android" || id === "picker");
+  document.getElementById("navbar").classList.toggle("hidden", chromeless || PLATFORM !== "linux");
+  document.getElementById("navbar-android").classList.toggle("hidden", chromeless || PLATFORM !== "android");
   if(id === "terminal") setTimeout(()=>document.getElementById("terminput").focus(), 60);
   if(id === "files") renderFiles();
   if(id === "about") renderAbout();
 }
 document.getElementById("homebtn").addEventListener("click", ()=>{
   document.getElementById("terminput").blur();
-  show("home");
+  show(homeViewId());
 });
+document.getElementById("androidHome").addEventListener("click", ()=>{
+  document.getElementById("terminput").blur();
+  show(homeViewId());
+});
+document.getElementById("androidBack").addEventListener("click", ()=>{
+  document.getElementById("terminput").blur();
+  show(homeViewId());
+});
+document.getElementById("androidMenu").addEventListener("click", ()=> show("settings"));
+
+/* ============ platform picker ============ */
+function choosePlatform(p){
+  PLATFORM = p;
+  document.getElementById("device").setAttribute("data-platform", p);
+  const psub = document.getElementById("platformsub");
+  if(psub) psub.textContent = p === "android" ? "Android (2010s)" : "Linux";
+  const bsub = document.getElementById("buildsub");
+  if(bsub) bsub.textContent = p === "android"
+    ? "Android 4.0.4 (ICS) · kernel 3.0.8"
+    : "pocketnix 0.1 · kernel 6.9.0-arm64";
+  if(p === "android") bootAndroid(); else boot();
+}
+document.getElementById("pick-linux").addEventListener("click", ()=> choosePlatform("linux"));
+document.getElementById("pick-android").addEventListener("click", ()=> choosePlatform("android"));
+document.getElementById("switchbtn").addEventListener("click", ()=> show("picker"));
 
 /* ============ status bar ============ */
 function pad(n){ return String(n).padStart(2,"0"); }
 function tickClock(){
   const d = new Date();
-  document.getElementById("clock").textContent = pad(d.getHours())+":"+pad(d.getMinutes());
+  const t = pad(d.getHours())+":"+pad(d.getMinutes());
+  document.getElementById("clock").textContent = t;
+  const ac = document.getElementById("ahomeClock");
+  if(ac) ac.textContent = t;
+  const ad = document.getElementById("ahomeDate");
+  if(ad) ad.textContent = d.toLocaleDateString(undefined, {weekday:"long", month:"long", day:"numeric"});
   const mins = Math.floor((Date.now()-BOOT_AT)/60000);
   document.getElementById("uptime").textContent =
     "up "+(mins<1 ? Math.floor((Date.now()-BOOT_AT)/1000)+"s" : mins+"m")+" · load 0.0"+(1+(d.getSeconds()%6));
@@ -337,6 +465,10 @@ function boot(){
     setTimeout(next, text === "" ? 90 : 130 + Math.random()*110);
   })();
 }
+function bootAndroid(){
+  show("boot-android");
+  setTimeout(()=> show(homeViewId()), 1300);
+}
 
 /* ============ home / launcher ============ */
 const APPS = [
@@ -353,6 +485,16 @@ APPS.forEach(a=>{
   b.innerHTML = `<span class="glyph">${a.glyph}</span><span class="name">${a.name}</span><span class="desc">${a.desc}</span>`;
   b.addEventListener("click", ()=>show(a.id));
   list.appendChild(b);
+});
+
+const APP_COLORS = { terminal:"#333333", files:"#f2b632", notes:"#3ea1e0", settings:"#78909c", about:"#8bc34a" };
+const alist = document.getElementById("applist-android");
+APPS.forEach(a=>{
+  const b = document.createElement("button");
+  b.className = "aicon";
+  b.innerHTML = `<span class="ai-glyph" style="background:${APP_COLORS[a.id]||"#555"}">${a.glyph}</span><span class="ai-label">${a.name}</span>`;
+  b.addEventListener("click", ()=>show(a.id));
+  alist.appendChild(b);
 });
 
 /* ============ filesystem helpers ============ */
@@ -474,7 +616,7 @@ const CMDS = {
     if(!a) return println("open: unknown app: "+(args[0]||""),"err");
     show(a.id);
   },
-  exit(){ println("logging out…","muted"); setTimeout(()=>show("home"), 350); }
+  exit(){ println("logging out…","muted"); setTimeout(()=>show(homeViewId()), 350); }
 };
 
 function run(raw){
@@ -566,15 +708,15 @@ document.getElementById("renamebtn").addEventListener("click", ()=>{
     document.querySelector(".greet").innerHTML = "user@<b>"+HOST+"</b>:~$";
   }
 });
-document.getElementById("rebootbtn").addEventListener("click", boot);
+document.getElementById("rebootbtn").addEventListener("click", ()=> PLATFORM === "android" ? bootAndroid() : boot());
 
 /* ============ about ============ */
 function renderAbout(){
   const rows = [
     ["hostname", HOST],
     ["user", USER],
-    ["os", "pocketnix 0.1"],
-    ["kernel", "6.9.0-arm64"],
+    ["os", PLATFORM === "android" ? "Android 4.0.4 (Ice Cream Sandwich)" : "pocketnix 0.1"],
+    ["kernel", PLATFORM === "android" ? "3.0.8-perf-g-droid" : "6.9.0-arm64"],
     ["screen", screen.width+"×"+screen.height+" @"+(window.devicePixelRatio||1)+"x"],
     ["viewport", innerWidth+"×"+innerHeight],
     ["memory", (navigator.deviceMemory||"6")+" GB"],
@@ -594,7 +736,8 @@ function renderAbout(){
 }
 
 /* ============ go ============ */
-boot();
+/* starts at #picker (see initial "on" class in markup) — boot() / bootAndroid()
+   fire once the user picks an interface */
 </script>
 </body>
 </html>
