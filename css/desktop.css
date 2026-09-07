@@ -1,0 +1,399 @@
+/* ==========================================================================
+   desktop.css — the "Slate" skin.
+
+   Replaces the old Aqua homage. The rules it plays by:
+     · chrome is near-black and warm-neutral; the wallpaper carries the colour
+     · one hairline edge, one honest shadow — no gloss, no inset highlights
+       stacked three deep, no pinstripes
+     · controls are flat and reveal a hover pill, rather than sitting in
+       permanent gel lozenges
+     · radius follows hierarchy: control < panel < window < dock
+   ========================================================================== */
+
+/* .scene already supplies `position:absolute; inset:0`, which is what makes
+   this the containing block for #desk, #windows and #dock. Re-declaring
+   position here would drop that inset and collapse the scene to zero height. */
+#desktop { display: none; }
+#desktop.on { display: block; }
+
+/* --------------------------------------------------------------------------
+   Desk surface + icons
+   -------------------------------------------------------------------------- */
+#desk {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 84px);
+  grid-auto-rows: 88px;
+  align-content: start;
+  justify-content: start;
+  gap: var(--s2);
+  padding: var(--s3);
+}
+
+.desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s1);
+  border-radius: var(--r-md);
+  color: #fff;
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.desk-icon:hover { background: rgba(255, 255, 255, .10); }
+.desk-icon:active { transform: scale(.94); }
+
+[data-theme="light"] .desk-icon { color: #221f2b; }
+[data-theme="light"] .desk-icon:hover { background: rgba(20, 18, 28, .08); }
+
+.desk-icon .di-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: var(--t-lg);
+  color: #fff;
+  box-shadow: var(--e1), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+
+.desk-icon .di-label {
+  font-size: var(--t-xs);
+  line-height: 1.3;
+  max-width: 76px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+}
+[data-theme="light"] .desk-icon .di-label { text-shadow: 0 1px 2px rgba(255, 255, 255, .7); }
+
+/* Uptime readout, tucked in a corner the way a real desktop widget would be. */
+#deskstat {
+  position: absolute;
+  right: var(--s4);
+  bottom: calc(var(--dock-h) + var(--s5));
+  z-index: 1;
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, .62);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  text-align: right;
+  pointer-events: none;
+}
+[data-theme="light"] #deskstat {
+  color: rgba(30, 26, 40, .55);
+  text-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   Window layer
+   -------------------------------------------------------------------------- */
+#windows {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  min-height: 140px;
+  pointer-events: auto;
+  overflow: hidden;
+  background: var(--surface);
+  backdrop-filter: blur(var(--blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e2);
+  transform: translate3d(var(--x, 0), var(--y, 0), 0);
+  transition: box-shadow var(--mid) var(--ease),
+              border-color var(--mid) var(--ease),
+              opacity var(--mid) var(--ease);
+  animation: winOpen var(--mid) var(--spring) both;
+}
+
+@keyframes winOpen {
+  from { opacity: 0; transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(.94); }
+  to   { opacity: 1; transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(1); }
+}
+
+.window.closing {
+  animation: winClose var(--fast) var(--ease-in) both;
+  pointer-events: none;
+}
+@keyframes winClose {
+  to { opacity: 0; transform: translate3d(var(--x, 0), var(--y, 0), 0) scale(.95); }
+}
+
+/* Unfocused windows recede rather than dim to mud: less shadow, softer edge. */
+.window:not(.focused) {
+  box-shadow: var(--e1);
+  border-color: color-mix(in srgb, var(--edge) 65%, transparent);
+}
+.window.focused {
+  box-shadow: var(--e3);
+  border-color: var(--edge-strong);
+}
+
+.window.minimised {
+  display: none;
+}
+
+/* While dragging or resizing, drop the transition so the window tracks the
+   pointer exactly, and stop the blur — compositing a 26px backdrop blur every
+   frame is the single most expensive thing on this screen. */
+.window.interacting {
+  transition: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: color-mix(in srgb, var(--surface) 100%, #000 6%);
+  will-change: transform, width, height;
+}
+
+.window.maximised {
+  --x: 0px;
+  --y: 0px;
+  border-radius: 0;
+  border-color: transparent;
+}
+
+/* --- header bar ---------------------------------------------------------
+   Title and controls share one bar; there is no separate title strip above
+   a toolbar. Controls sit right, flat, and grow a hover pill. */
+.win-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  height: var(--header-h);
+  padding: 0 var(--s2) 0 var(--s4);
+  border-bottom: 1px solid var(--edge);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.window.interacting .win-header { cursor: grabbing; }
+
+.win-header .wh-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: -.005em;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-header .wh-sub {
+  font-size: var(--t-xs);
+  font-weight: 400;
+  color: var(--ink-faint);
+  margin-left: var(--s2);
+}
+
+.win-btn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-xs);
+  color: var(--ink-dim);
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  touch-action: manipulation;
+}
+.win-btn:hover { background: var(--surface-3); color: var(--ink); }
+.win-btn:active { transform: scale(.92); }
+.win-btn.danger:hover { background: var(--danger); color: #fff; }
+.win-btn svg { width: 13px; height: 13px; display: block; }
+
+/* --- window body --------------------------------------------------------- */
+.win-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- resize grip ---------------------------------------------------------
+   Present but nearly invisible until you go looking for it, which is how a
+   resize affordance should behave. */
+.win-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 3;
+}
+.win-resize::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--ink-faint);
+  border-bottom: 1.5px solid var(--ink-faint);
+  border-bottom-right-radius: 2px;
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+.window:hover .win-resize::after,
+.window.focused .win-resize::after { opacity: .8; }
+.window.maximised .win-resize { display: none; }
+
+/* --- snap preview --------------------------------------------------------
+   Drag a window to an edge and the target region previews before you commit. */
+#snap {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease),
+              transform var(--mid) var(--spring),
+              width var(--mid) var(--spring),
+              height var(--mid) var(--spring);
+}
+#snap.on { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   Dock
+   The old build had a dock *and* a separate taskbar row. One thing does both
+   jobs now: a running app shows an indicator dot, and clicking its tile
+   focuses, minimises, or restores it.
+   -------------------------------------------------------------------------- */
+#dock {
+  position: absolute;
+  left: 50%;
+  bottom: max(env(safe-area-inset-bottom), var(--s3));
+  z-index: 20;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s1);
+  max-width: calc(100% - var(--s5));
+  padding: var(--s2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  background: var(--surface);
+  backdrop-filter: blur(var(--blur)) saturate(170%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(170%);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-xl);
+  box-shadow: var(--e2);
+}
+#dock::-webkit-scrollbar { display: none; }
+
+.dock-tile {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  padding-bottom: 7px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  transition: transform var(--mid) var(--spring);
+}
+.dock-tile:hover  { transform: translateY(-5px) scale(1.06); }
+.dock-tile:active { transform: translateY(-1px) scale(.97); }
+
+.dock-tile .dk-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: var(--t-md);
+  color: #fff;
+  box-shadow: var(--e1), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+
+/* Running indicator. Hollow when the window is minimised, solid when open. */
+.dock-tile .dk-dot {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: var(--r-full);
+  background: var(--ink);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease), width var(--fast) var(--ease),
+              margin-left var(--fast) var(--ease);
+}
+.dock-tile[data-running="true"] .dk-dot { opacity: .85; }
+.dock-tile[data-running="true"][data-focused="true"] .dk-dot {
+  width: 14px;
+  margin-left: -7px;
+  background: var(--accent);
+  opacity: 1;
+}
+.dock-tile[data-running="true"][data-minimised="true"] .dk-dot { opacity: .38; }
+
+/* Tooltip. Pointer devices only — it would be dead weight on touch. */
+.dock-tile .dk-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 9px;
+  font-size: var(--t-xs);
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-xs);
+  box-shadow: var(--e1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dock-tile:hover .dk-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@media not all and (hover: hover) {
+  .dock-tile .dk-tip { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Narrow desktop: the dock spans the width and icons shrink, so the skin
+   stays usable on a phone rather than collapsing.
+   -------------------------------------------------------------------------- */
+@media (max-width: 560px) {
+  #dock {
+    left: var(--s2);
+    right: var(--s2);
+    max-width: none;
+    transform: none;
+    justify-content: space-between;
+    border-radius: var(--r-lg);
+  }
+  .dock-tile { width: 40px; }
+  .dock-tile .dk-mark { width: 36px; height: 36px; border-radius: 10px; }
+  #desk { grid-template-columns: repeat(auto-fill, 76px); grid-auto-rows: 82px; }
+  #deskstat { bottom: calc(var(--dock-h) + var(--s3)); }
+}

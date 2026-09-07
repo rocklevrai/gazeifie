@@ -1,0 +1,379 @@
+/* ==========================================================================
+   phone.css — the "Halo" skin.
+
+   Distinct from the desktop by palette *and* structure: cooler, deeper,
+   larger radii, spring motion, and no windows at all. One app fills the
+   screen; the gesture bar is the only navigation.
+   ========================================================================== */
+
+/* See the note in desktop.css: the positioning comes from .scene. */
+#phone { display: none; }
+#phone.on { display: block; }
+
+/* --------------------------------------------------------------------------
+   Launcher
+   -------------------------------------------------------------------------- */
+#launcher {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--s4);
+  transition: transform var(--slow) var(--spring), opacity var(--mid) var(--ease);
+}
+
+/* The launcher recedes slightly when an app is open, so returning home reads
+   as coming *back* rather than cutting to an unrelated screen. */
+#phone[data-app] #launcher {
+  transform: scale(.94);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lc-clock {
+  margin-top: var(--s5);
+  font-size: var(--t-3xl);
+  font-weight: 200;
+  letter-spacing: -.04em;
+  line-height: 1;
+  text-align: center;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-date {
+  margin: var(--s2) 0 var(--s5);
+  font-size: var(--t-md);
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+.lc-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-content: start;
+  gap: var(--s5) var(--s2);
+  overflow-y: auto;
+  padding-bottom: var(--s4);
+}
+
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--ink);
+  transition: transform var(--mid) var(--spring);
+}
+.app-icon:active { transform: scale(.87); }
+
+.app-icon .ic-mark {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: var(--t-lg);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+/* A single soft top sheen. One highlight, not the three-layer gel stack the
+   old skin used. */
+.app-icon .ic-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 58%);
+  pointer-events: none;
+}
+
+.app-icon .ic-label {
+  font-size: var(--t-xs);
+  line-height: 1.25;
+  text-align: center;
+  color: #e7ebf3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lc-dock {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-around;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+  padding: var(--s3) var(--s2);
+  background: var(--surface);
+  backdrop-filter: blur(var(--blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-2xl);
+}
+.lc-dock .ic-label { display: none; }
+
+/* --------------------------------------------------------------------------
+   App stage — one app, full screen
+   -------------------------------------------------------------------------- */
+#stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: none;
+  flex-direction: column;
+  background: var(--surface);
+  backdrop-filter: blur(var(--blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
+}
+#phone[data-app] #stage {
+  display: flex;
+  animation: appIn var(--slow) var(--spring) both;
+}
+@keyframes appIn {
+  from { opacity: 0; transform: scale(.9) translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+#stage.leaving {
+  animation: appOut var(--mid) var(--ease-in) both;
+  pointer-events: none;
+}
+@keyframes appOut {
+  to { opacity: 0; transform: scale(.93) translateY(10px); }
+}
+
+.stage-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--edge);
+}
+.stage-header .sh-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--t-lg);
+  font-weight: 600;
+  letter-spacing: -.015em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stage-header .sh-sub {
+  font-size: var(--t-xs);
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+
+/* --------------------------------------------------------------------------
+   Recents switcher
+   -------------------------------------------------------------------------- */
+#recents {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  background: rgba(6, 8, 13, .68);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  opacity: 0;
+  transition: opacity var(--mid) var(--ease);
+}
+#recents.on { display: flex; opacity: 1; }
+
+#recents .rc-track {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  padding: 0 calc(50% - 108px);
+  scrollbar-width: none;
+}
+#recents .rc-track::-webkit-scrollbar { display: none; }
+
+#recents .rc-track:empty::after {
+  content: "Nothing open yet";
+  margin: 0 auto;
+  color: var(--ink-dim);
+  font-size: var(--t-md);
+  white-space: nowrap;
+}
+
+.rc-card {
+  position: relative;
+  flex: 0 0 216px;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  touch-action: pan-x;
+  transition: transform var(--mid) var(--spring), opacity var(--fast) var(--ease);
+}
+
+.rc-shot {
+  position: relative;
+  width: 216px;
+  height: min(400px, 58dvh);
+  overflow: hidden;
+  border-radius: var(--r-2xl);
+  background: var(--surface);
+  border: 1px solid var(--edge-strong);
+  box-shadow: 0 24px 52px rgba(0, 0, 0, .62);
+}
+.rc-shot > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.rc-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--t-sm);
+  color: #dde3ee;
+}
+.rc-meta .rc-mark {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-xs);
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: var(--t-2xs);
+  color: #fff;
+}
+
+#recents .rc-hint {
+  flex: 0 0 auto;
+  padding: 0 0 calc(env(safe-area-inset-bottom) + var(--s4));
+  text-align: center;
+  font-size: var(--t-xs);
+  color: var(--ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Control centre
+   -------------------------------------------------------------------------- */
+#cc {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 60;
+  padding: calc(env(safe-area-inset-top) + var(--s6)) var(--s3) var(--s4);
+  background: rgba(11, 14, 20, .84);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border-bottom: 1px solid var(--edge);
+  border-radius: 0 0 var(--r-2xl) var(--r-2xl);
+  box-shadow: 0 24px 52px rgba(0, 0, 0, .55);
+  transform: translateY(-102%);
+  transition: transform var(--slow) var(--spring);
+  touch-action: none;
+}
+#cc.on { transform: translateY(0); }
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+
+.cc-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  border: 1px solid var(--edge);
+  color: var(--ink-dim);
+  font-size: var(--t-sm);
+  text-align: left;
+  transition: background var(--mid) var(--ease), color var(--mid) var(--ease),
+              border-color var(--mid) var(--ease);
+}
+.cc-toggle .tg-mark {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full);
+  display: grid;
+  place-items: center;
+  background: var(--surface-3);
+  transition: background var(--mid) var(--ease), color var(--mid) var(--ease);
+}
+.cc-toggle .tg-mark svg { width: 14px; height: 14px; }
+.cc-toggle[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  color: #fff;
+}
+.cc-toggle[aria-pressed="true"] .tg-mark {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cc-slider {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  border: 1px solid var(--edge);
+}
+.cc-slider svg { width: 16px; height: 16px; color: var(--ink-dim); flex: 0 0 auto; }
+.cc-slider input { flex: 1; accent-color: var(--accent); }
+
+.cc-handle {
+  width: 38px;
+  height: 4px;
+  margin: var(--s3) auto 0;
+  border-radius: var(--r-full);
+  background: var(--edge-strong);
+}
+
+/* --------------------------------------------------------------------------
+   Gesture bar
+   -------------------------------------------------------------------------- */
+#navbar {
+  position: relative;
+  z-index: 35;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: var(--s2) 0 calc(env(safe-area-inset-bottom) + var(--s2));
+  touch-action: none;
+}
+#navbar[hidden] { display: none; }
+
+#gesturebar {
+  width: 128px;
+  height: 5px;
+  border-radius: var(--r-full);
+  background: rgba(255, 255, 255, .5);
+  cursor: grab;
+  transition: background var(--mid) var(--ease), transform var(--mid) var(--ease);
+}
+#gesturebar:active { background: #fff; transform: scaleY(1.5); }
+
+[data-theme="light"] #gesturebar { background: rgba(20, 18, 28, .4); }

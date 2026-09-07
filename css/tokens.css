@@ -1,0 +1,187 @@
+/* ==========================================================================
+   tokens.css — the whole design system in one place.
+
+   Everything downstream reads from these. Two skins ("desktop", "phone") each
+   override the semantic block; nothing else in the codebase hard-codes a
+   colour. That is what makes the light theme at the bottom nearly free.
+   ========================================================================== */
+
+:root {
+  /* --- type ---------------------------------------------------------------
+     Sans is the interface. Mono appears only where it is *true*: the terminal
+     and the boot log. The original used mono for all chrome, which is the
+     single biggest reason it read as dated. */
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display",
+          "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono",
+          Menlo, Consolas, monospace;
+
+  --t-2xs: 10px;
+  --t-xs:  10.5px;
+  --t-sm:  11.5px;
+  --t-md:  13px;
+  --t-lg:  15px;
+  --t-xl:  20px;
+  --t-2xl: 28px;
+  --t-3xl: 60px;
+
+  --lh-tight: 1.25;
+  --lh-body:  1.6;
+
+  /* --- space --------------------------------------------------------------
+     A 4px base. Named by step so spacing decisions stay comparable. */
+  --s1:  4px;
+  --s2:  8px;
+  --s3:  12px;
+  --s4:  16px;
+  --s5:  24px;
+  --s6:  32px;
+  --s7:  48px;
+
+  /* --- radius -------------------------------------------------------------
+     Hierarchy, not one value everywhere: controls < panels < windows < sheets. */
+  --r-xs:   6px;
+  --r-sm:   9px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   22px;
+  --r-2xl:  28px;
+  --r-full: 999px;
+
+  /* --- motion -------------------------------------------------------------- */
+  --ease:    cubic-bezier(.2, .8, .25, 1);
+  --spring:  cubic-bezier(.16, 1.02, .3, 1);
+  --ease-in: cubic-bezier(.4, 0, .9, .5);
+  --fast: .14s;
+  --mid:  .24s;
+  --slow: .36s;
+
+  /* --- neutral fallback palette -------------------------------------------
+     Used by the interface picker, which belongs to neither skin. */
+  --ink:        #e8e6ee;
+  --ink-dim:    #9591a4;
+  --ink-faint:  #6b6678;
+  --surface:    rgba(26, 24, 31, .82);
+  --surface-2:  rgba(255, 255, 255, .05);
+  --edge:       rgba(255, 255, 255, .10);
+  --edge-strong:rgba(255, 255, 255, .18);
+  --accent:     #f2a25c;
+  --accent-ink: #1a1206;
+  --danger:     #e0698a;
+  --positive:   #6fd3c7;
+
+  --blur: 24px;
+
+  --e1: 0 1px 2px rgba(0, 0, 0, .28);
+  --e2: 0 8px 20px -6px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .25);
+  --e3: 0 28px 64px -16px rgba(0, 0, 0, .65), 0 4px 12px rgba(0, 0, 0, .32);
+
+  /* Chrome height, referenced by JS for window clamping so the two can't drift. */
+  --menubar-h: 30px;
+  --header-h:  38px;
+  --dock-h:    62px;
+}
+
+/* ==========================================================================
+   Desktop skin — "Slate"
+   Warm-neutral near-black chrome floating over a wallpaper that carries all
+   the colour. Deliberately not the old blue glass: no gloss, no pinstripes,
+   no gel lozenges. Flat controls, hairline edges, one honest shadow.
+   ========================================================================== */
+[data-os="desktop"] {
+  --ink:         #eceaf1;
+  --ink-dim:     #a09caa;
+  --ink-faint:   #6f6b7a;
+
+  --surface:     rgba(24, 23, 28, .74);
+  --surface-2:   rgba(255, 255, 255, .055);
+  --surface-3:   rgba(255, 255, 255, .10);
+  --edge:        rgba(255, 255, 255, .09);
+  --edge-strong: rgba(255, 255, 255, .17);
+
+  --accent:      #f2a25c;
+  --accent-ink:  #1c1307;
+  --danger:      #ef7089;
+  --positive:    #6fd3c7;
+
+  --blur: 26px;
+
+  /* A mesh, not a vignette. The chrome above it is near-black, so if the
+     wallpaper stays muted the whole skin collapses into "dark grey with one
+     accent" — the most generic dark theme there is. The colour lives here so
+     the windows can stay quiet. */
+  --wall:
+    radial-gradient(76% 56% at 6% -4%,  rgba(244, 158, 84, .38), transparent 58%),
+    radial-gradient(66% 54% at 96% 10%, rgba(134, 88, 236, .55), transparent 62%),
+    radial-gradient(92% 66% at 42% 110%, rgba(48, 148, 186, .48), transparent 66%),
+    radial-gradient(50% 40% at 70% 62%, rgba(196, 74, 132, .28), transparent 70%),
+    linear-gradient(166deg, #2b2450 0%, #241d3e 44%, #17142a 100%);
+}
+
+/* ==========================================================================
+   Phone skin — "Halo"
+   Cooler, deeper, larger radii, more saturated wallpaper. Distinct from the
+   desktop by palette *and* by structure, so the two never read as the same OS.
+   ========================================================================== */
+[data-os="phone"] {
+  --ink:         #f3f5f9;
+  --ink-dim:     #98a1b2;
+  --ink-faint:   #6b7386;
+
+  --surface:     rgba(17, 20, 27, .78);
+  --surface-2:   rgba(255, 255, 255, .07);
+  --surface-3:   rgba(255, 255, 255, .12);
+  --edge:        rgba(255, 255, 255, .10);
+  --edge-strong: rgba(255, 255, 255, .20);
+
+  --accent:      #6ea8fe;
+  --accent-ink:  #08101f;
+  --danger:      #ff7a93;
+  --positive:    #3ddbb8;
+
+  --blur: 30px;
+
+  --wall:
+    radial-gradient(70% 44% at 12% -2%,  rgba(96, 162, 255, .55), transparent 60%),
+    radial-gradient(58% 40% at 94% 16%, rgba(178, 118, 255, .48), transparent 64%),
+    radial-gradient(88% 52% at 46% 106%, rgba(38, 208, 186, .40), transparent 66%),
+    linear-gradient(#151a2e 0%, #111527 56%, #0a0c16 100%);
+}
+
+/* ==========================================================================
+   Light appearance — desktop only, opt-in from Settings.
+
+   The entire cost of light mode is this block. That is the argument for
+   tokens: no component below this line knows the theme exists.
+   ========================================================================== */
+[data-os="desktop"][data-theme="light"] {
+  --ink:         #1b1a20;
+  --ink-dim:     #5f5c69;
+  --ink-faint:   #8d8996;
+
+  --surface:     rgba(252, 251, 253, .78);
+  --surface-2:   rgba(20, 18, 28, .045);
+  --surface-3:   rgba(20, 18, 28, .085);
+  --edge:        rgba(20, 18, 28, .12);
+  --edge-strong: rgba(20, 18, 28, .22);
+
+  --accent:      #b4611c;
+  --accent-ink:  #fffaf4;
+
+  --e1: 0 1px 2px rgba(28, 22, 44, .10);
+  --e2: 0 8px 20px -6px rgba(28, 22, 44, .18), 0 2px 6px rgba(28, 22, 44, .08);
+  --e3: 0 28px 64px -16px rgba(28, 22, 44, .26), 0 4px 12px rgba(28, 22, 44, .10);
+
+  --wall:
+    radial-gradient(78% 58% at 12% 4%,  rgba(255, 214, 170, .85), transparent 62%),
+    radial-gradient(64% 52% at 88% 18%, rgba(206, 194, 255, .80), transparent 66%),
+    radial-gradient(90% 62% at 50% 106%, rgba(176, 224, 232, .75), transparent 70%),
+    linear-gradient(168deg, #f4eee9 0%, #eae6f2 45%, #e2e6ee 100%);
+}
+
+/* The terminal keeps its dark console in light mode — a light shell does not
+   make a light terminal, and every real OS agrees. */
+[data-os="desktop"][data-theme="light"] .term {
+  --ink: #e9e7ef;
+  --ink-dim: #8e8a9c;
+}

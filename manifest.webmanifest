@@ -1,0 +1,14 @@
+{
+  "name": "gazéifié",
+  "short_name": "gazéifié",
+  "description": "A small computer that runs in a browser tab.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0c11",
+  "theme_color": "#16151c",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
