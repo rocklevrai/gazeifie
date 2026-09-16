@@ -27,8 +27,15 @@
   align-content: start;
   justify-content: start;
   gap: var(--s2);
-  padding: var(--s3);
+  /* There's no menu bar on this skin to clear the notch/Dynamic Island for
+     us, so the desk itself has to keep its icons out of that area — same
+     for the taskbar at the bottom and the rounded-corner insets at the
+     sides in landscape. `viewport-fit=cover` (set in index.html) is what
+     makes these resolve to real pixels instead of 0. */
+  padding-top: calc(env(safe-area-inset-top) + var(--s3));
   padding-bottom: calc(var(--dock-h) + var(--s3));
+  padding-left: max(env(safe-area-inset-left), var(--s3));
+  padding-right: max(env(safe-area-inset-right), var(--s3));
 }
 
 .desk-icon {
@@ -99,7 +106,13 @@
    -------------------------------------------------------------------------- */
 #windows {
   position: absolute;
-  inset: 0;
+  /* Shrinking the box itself — not just padding it — is what matters here:
+     .window children are positioned with top:0/left:0 plus a transform, and
+     absolute offsets resolve against this element's own edge. Insetting the
+     edge is the only way that math stays notch/Dynamic-Island-aware without
+     teaching the window manager's JS about safe areas at all — measure(),
+     the cascade, drag clamping and maximise all read this rect as-is. */
+  inset: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   z-index: 5;
   pointer-events: none;
 }
@@ -327,8 +340,14 @@
   z-index: 20;
   display: flex;
   align-items: stretch;
-  height: var(--dock-h);
-  padding: 0 var(--s2) 0 0;
+  /* The glass bar itself still runs flush to the true bottom edge (and into
+     the rounded-corner/notch gutters at the sides) — only the buttons pull
+     back from the home-indicator strip, via padding rather than a shorter
+     box, so nothing looks like it's floating above the edge. Box-sizing is
+     border-box globally, so this padding doesn't touch the content height
+     the button rows were sized against. */
+  height: calc(var(--dock-h) + env(safe-area-inset-bottom));
+  padding: 0 max(var(--s2), env(safe-area-inset-right)) env(safe-area-inset-bottom) env(safe-area-inset-left);
   border-radius: 0;
   border: none;
   border-top: 1px solid rgba(255, 255, 255, .3);
@@ -505,13 +524,16 @@
    -------------------------------------------------------------------------- */
 .start-menu {
   position: absolute;
-  left: var(--s2);
-  bottom: calc(var(--dock-h) + var(--s2));
+  left: max(var(--s2), env(safe-area-inset-left));
+  /* The taskbar's own box now runs into the home-indicator gutter (see
+     #dock), so "above the taskbar" means above its full padded height,
+     safe-area bottom inset included. */
+  bottom: calc(var(--dock-h) + env(safe-area-inset-bottom) + var(--s2));
   z-index: 25;
   display: flex;
   flex-direction: column;
   width: min(300px, calc(100% - var(--s4)));
-  max-height: min(460px, calc(100% - var(--dock-h) - var(--s5)));
+  max-height: min(460px, calc(100% - var(--dock-h) - env(safe-area-inset-bottom) - var(--s5)));
   border-radius: 8px;
   border: 1px solid var(--edge-strong);
   background: var(--surface);
@@ -665,6 +687,11 @@
   .task-btn .tb-label { display: none; }
   .task-btn { flex-basis: 40px; }
   .tray-clock { font-variant-numeric: tabular-nums; }
+  /* Eight pinned shortcuts plus a task list plus a tray clock is more than
+     a phone-width taskbar can hold without the tray losing the fight for
+     space and clipping — the Start menu already reaches every app with a
+     search box, so Quick Launch is the one to give up the room. */
+  .ql-group, .tb-sep { display: none; }
 }
 
 @media (max-width: 560px) {
