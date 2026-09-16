@@ -1,13 +1,11 @@
 /* ==========================================================================
-   desktop.css — the "Slate" skin.
+   desktop.css — the "Aero" skin.
 
-   Replaces the old Aqua homage. The rules it plays by:
-     · chrome is near-black and warm-neutral; the wallpaper carries the colour
-     · one hairline edge, one honest shadow — no gloss, no inset highlights
-       stacked three deep, no pinstripes
-     · controls are flat and reveal a hover pill, rather than sitting in
-       permanent gel lozenges
-     · radius follows hierarchy: control < panel < window < dock
+   A late-2000s Windows Vista homage, and deliberately the opposite brief
+   from the phone skin: glass chrome with a graduated blue tint and a glossy
+   top highlight, a taskbar (not a dock) with a Start orb, and object icons
+   on the desk with no coloured card behind them. Nothing here should read
+   as a home screen.
    ========================================================================== */
 
 /* .scene already supplies `position:absolute; inset:0`, which is what makes
@@ -30,6 +28,7 @@
   justify-content: start;
   gap: var(--s2);
   padding: var(--s3);
+  padding-bottom: calc(var(--dock-h) + var(--s3));
 }
 
 .desk-icon {
@@ -44,12 +43,12 @@
 }
 /* A hairline rectangle, not a filled pill — a selection marquee reads as
    "desktop file browser," a glowing rounded blob reads as "app icon press." */
-.desk-icon:hover { background: rgba(255, 255, 255, .08); outline: 1px solid rgba(255, 255, 255, .18); outline-offset: -1px; }
-.desk-icon:active { background: rgba(120, 170, 255, .22); outline-color: rgba(150, 190, 255, .5); }
+.desk-icon:hover { background: rgba(255, 255, 255, .10); outline: 1px solid rgba(255, 255, 255, .22); outline-offset: -1px; }
+.desk-icon:active { background: rgba(70, 140, 230, .35); outline: 1px dotted rgba(190, 220, 255, .8); outline-offset: -1px; }
 
-[data-theme="light"] .desk-icon { color: #221f2b; }
-[data-theme="light"] .desk-icon:hover { background: rgba(20, 18, 28, .06); outline-color: rgba(20, 18, 28, .16); }
-[data-theme="light"] .desk-icon:active { background: rgba(60, 120, 220, .16); outline-color: rgba(60, 120, 220, .4); }
+[data-theme="light"] .desk-icon { color: #14202c; text-shadow: 0 1px 2px rgba(255, 255, 255, .8); }
+[data-theme="light"] .desk-icon:hover { background: rgba(255, 255, 255, .35); outline-color: rgba(20, 40, 60, .25); }
+[data-theme="light"] .desk-icon:active { background: rgba(60, 130, 220, .30); outline-color: rgba(30, 90, 170, .6); }
 
 .desk-icon .di-mark {
   width: 46px;
@@ -61,22 +60,21 @@
 /* A folder or a file is the object itself: its own fixed colours, drawn flat
    on the desk, with a soft cast shadow instead of sitting on a tinted card. */
 .desk-icon .di-mark--object {
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .45));
 }
 .desk-icon .di-mark--object .desk-glyph { display: block; }
 .desk-icon .di-mark--object .desk-glyph--folder { width: 44px; height: auto; }
 .desk-icon .di-mark--object .desk-glyph--file { width: 30px; height: auto; }
 
-/* App tiles keep a plate, but a square, matte one — no 17px superellipse
-   radius, no glossy inset highlight. Those two cues are what make an icon
-   read as "phone home screen" at a glance, so a desktop icon gets neither. */
+/* App tiles keep a plate, but a squarish, glassy one — a late-2000s program
+   icon, not a phone-home-screen superellipse. */
 .desk-icon .di-mark--app {
   width: 42px;
   height: 42px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, .25);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, .35);
   color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .35);
 }
 .desk-icon .di-mark--app svg { width: 22px; height: 22px; }
 
@@ -88,27 +86,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
 }
-[data-theme="light"] .desk-icon .di-label { text-shadow: 0 1px 2px rgba(255, 255, 255, .7); }
+[data-theme="light"] .desk-icon .di-label { text-shadow: 0 1px 2px rgba(255, 255, 255, .8); }
 
-/* Uptime readout, tucked in a corner the way a real desktop widget would be. */
-#deskstat {
-  position: absolute;
-  right: var(--s4);
-  bottom: calc(var(--dock-h) + var(--s5));
-  z-index: 1;
-  font-size: var(--t-xs);
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, .62);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
-  text-align: right;
-  pointer-events: none;
-}
-[data-theme="light"] #deskstat {
-  color: rgba(30, 26, 40, .55);
-  text-shadow: none;
-}
+/* The old build parked a live uptime readout on the desk; Vista keeps that
+   kind of status in the tray instead, so nothing floats here any more. */
+#deskstat { display: none; }
 
 /* --------------------------------------------------------------------------
    Window layer
@@ -134,7 +118,7 @@
   backdrop-filter: blur(var(--blur)) saturate(160%);
   -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
   border: 1px solid var(--edge);
-  border-radius: var(--r-lg);
+  border-radius: 8px;
   box-shadow: var(--e2);
   transform: translate3d(var(--x, 0), var(--y, 0), 0);
   transition: box-shadow var(--mid) var(--ease),
@@ -171,7 +155,7 @@
 }
 
 /* While dragging or resizing, drop the transition so the window tracks the
-   pointer exactly, and stop the blur — compositing a 26px backdrop blur every
+   pointer exactly, and stop the blur — compositing a 20px backdrop blur every
    frame is the single most expensive thing on this screen. */
 .window.interacting {
   transition: none;
@@ -189,20 +173,42 @@
 }
 
 /* --- header bar ---------------------------------------------------------
-   Title and controls share one bar; there is no separate title strip above
-   a toolbar. Controls sit right, flat, and grow a hover pill. */
+   Glass, not flat chrome: a glossy highlight across the top half over a
+   blue-graduated fill, the way Aero's title bars caught the light. Focused
+   windows run a more saturated blue; unfocused windows fade toward grey. */
 .win-header {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--s2);
   height: var(--header-h);
   padding: 0 var(--s2) 0 var(--s4);
-  border-bottom: 1px solid var(--edge);
+  border-bottom: 1px solid rgba(0, 0, 0, .35);
   cursor: grab;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  color: var(--ink);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .24) 0%, rgba(255, 255, 255, .05) 45%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, .10) 100%),
+    linear-gradient(160deg, #3f6c9c 0%, #204672 55%, #10233e 100%);
+}
+.window:not(.focused) .win-header {
+  color: var(--ink-faint);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .14) 0%, rgba(255, 255, 255, .03) 45%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, .08) 100%),
+    linear-gradient(160deg, #3c4553 0%, #272d38 55%, #171b23 100%);
+}
+[data-theme="light"] .win-header {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .55) 44%, rgba(255, 255, 255, .18) 45%, rgba(185, 216, 248, .4) 100%),
+    linear-gradient(160deg, #c3e1ff 0%, #8ebbec 55%, #5c96cd 100%);
+}
+[data-theme="light"] .window:not(.focused) .win-header {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .85) 0%, rgba(255, 255, 255, .45) 44%, rgba(255, 255, 255, .12) 45%, rgba(210, 220, 232, .35) 100%),
+    linear-gradient(160deg, #e6ebf0 0%, #cad2db 55%, #aeb8c4 100%);
 }
 .window.interacting .win-header { cursor: grabbing; }
 
@@ -212,7 +218,7 @@
   font-size: var(--t-sm);
   font-weight: 600;
   letter-spacing: -.005em;
-  color: var(--ink);
+  color: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -221,25 +227,33 @@
 .win-header .wh-sub {
   font-size: var(--t-xs);
   font-weight: 400;
-  color: var(--ink-faint);
+  opacity: .78;
   margin-left: var(--s2);
 }
 
+/* Small glassy gel buttons, Aero-style, rather than a hover pill. */
 .win-btn {
   flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 19px;
   display: grid;
   place-items: center;
-  border-radius: var(--r-xs);
-  color: var(--ink-dim);
-  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  border-radius: 3px;
+  color: inherit;
+  border: 1px solid rgba(0, 0, 0, .3);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, .38), rgba(255, 255, 255, .05) 48%, rgba(0, 0, 0, .12));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .3) inset;
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
   touch-action: manipulation;
 }
-.win-btn:hover { background: var(--surface-3); color: var(--ink); }
+.win-btn:hover { background: linear-gradient(to bottom, rgba(255, 255, 255, .6), rgba(255, 255, 255, .12) 48%, rgba(0, 0, 0, .08)); }
 .win-btn:active { transform: scale(.92); }
-.win-btn.danger:hover { background: var(--danger); color: #fff; }
-.win-btn svg { width: 13px; height: 13px; display: block; }
+.win-btn.danger:hover {
+  background: linear-gradient(to bottom, #ff9d9d, #e23b3b 55%, #b81b1b);
+  border-color: #8a1414;
+  color: #fff;
+}
+.win-btn svg { width: 12px; height: 12px; display: block; }
 
 /* --- window body --------------------------------------------------------- */
 .win-body {
@@ -287,7 +301,7 @@
   z-index: 4;
   pointer-events: none;
   border: 1.5px solid var(--accent);
-  border-radius: var(--r-lg);
+  border-radius: 6px;
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   opacity: 0;
   transition: opacity var(--fast) var(--ease),
@@ -298,122 +312,361 @@
 #snap.on { opacity: 1; }
 
 /* --------------------------------------------------------------------------
-   Dock
-   The old build had a dock *and* a separate taskbar row. One thing does both
-   jobs now: a running app shows an indicator dot, and clicking its tile
-   focuses, minimises, or restores it.
+   Taskbar
+   A full-width glass strip fixed to the bottom edge: a Start orb, a row of
+   permanent Quick Launch shortcuts, a task list that only shows buttons for
+   windows actually open, and a system tray with the clock. Four Vista parts
+   doing four separate jobs, on purpose — a dock collapses all of them into
+   one control, which is exactly the shape that reads as "phone," not "PC."
    -------------------------------------------------------------------------- */
 #dock {
   position: absolute;
-  left: 50%;
-  bottom: max(env(safe-area-inset-bottom), var(--s3));
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 20;
-  transform: translateX(-50%);
   display: flex;
-  align-items: flex-end;
-  gap: var(--s1);
-  max-width: calc(100% - var(--s5));
-  padding: var(--s2);
+  align-items: stretch;
+  height: var(--dock-h);
+  padding: 0 var(--s2) 0 0;
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, .3);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .30) 0%, rgba(255, 255, 255, .06) 20%, rgba(255, 255, 255, 0) 21%, rgba(0, 0, 0, .18) 100%),
+    linear-gradient(180deg, #2a4d76 0%, #16324f 45%, #0a1c30 100%);
+  backdrop-filter: blur(var(--blur)) saturate(170%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(170%);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .4);
+}
+[data-theme="light"] #dock {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .1) 20%, rgba(255, 255, 255, 0) 21%, rgba(20, 40, 65, .12) 100%),
+    linear-gradient(180deg, #bcdcff 0%, #7fadde 45%, #4c7bab 100%);
+}
+
+.start-btn {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -5px 8px -5px 6px;
+  padding: 0 var(--s3) 0 4px;
+  border-radius: var(--r-full);
+  color: #eaf5ff;
+  background: radial-gradient(80% 120% at 30% 15%, #cdeeff, #4fa6e8 42%, #1c5fa8 75%, #0c3a70 100%);
+  border: 1px solid rgba(255, 255, 255, .55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .5), inset 0 2px 3px rgba(255, 255, 255, .6);
+  transition: filter var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.start-btn:hover { filter: brightness(1.08); }
+.start-btn:active,
+.start-btn[aria-expanded="true"] { transform: scale(.97); filter: brightness(.94); }
+
+.start-btn .start-orb {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  display: grid;
+  place-items: center;
+  color: #072341;
+  background: radial-gradient(65% 65% at 35% 30%, #fff, #d7eeff 55%, #a9d4f5 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+.start-btn .start-orb svg { width: 15px; height: 15px; }
+
+.start-btn .start-label {
+  font-size: var(--t-sm);
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+.ql-group {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--s1);
+}
+
+.ql-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  align-self: center;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  transition: background var(--fast) var(--ease);
+}
+.ql-btn:hover { background: rgba(255, 255, 255, .18); }
+.ql-btn:active { background: rgba(255, 255, 255, .3); }
+[data-theme="light"] .ql-btn:hover { background: rgba(255, 255, 255, .45); }
+[data-theme="light"] .ql-btn:active { background: rgba(255, 255, 255, .65); }
+
+.ql-btn .ql-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.ql-btn .ql-mark svg { width: 13px; height: 13px; }
+
+.tb-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  margin: 6px 4px;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(255, 255, 255, .35), rgba(0, 0, 0, 0));
+}
+
+.task-list {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 5px 4px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+}
+.task-list::-webkit-scrollbar { display: none; }
+
+.task-btn {
+  flex: 0 1 180px;
+  min-width: 44px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--s2);
+  border-radius: 4px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .12) inset;
+  transition: background var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+.task-btn:hover { background: rgba(255, 255, 255, .16); }
+.task-btn[data-focused="true"] {
+  background: rgba(255, 255, 255, .26);
+  border-color: rgba(255, 255, 255, .4);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .2) inset, 0 0 0 1px rgba(255, 255, 255, .12);
+}
+.task-btn[data-minimised="true"] { opacity: .68; }
+[data-theme="light"] .task-btn { background: rgba(255, 255, 255, .3); border-color: rgba(255, 255, 255, .5); }
+[data-theme="light"] .task-btn:hover { background: rgba(255, 255, 255, .5); }
+[data-theme="light"] .task-btn[data-focused="true"] { background: rgba(255, 255, 255, .7); }
+
+.task-btn .tb-mark {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.task-btn .tb-mark svg { width: 12px; height: 12px; }
+
+.task-btn .tb-label {
+  min-width: 0;
+  font-size: var(--t-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tray {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 0 var(--s3) 0 var(--s2);
+  margin-left: 4px;
+  border-left: 1px solid rgba(255, 255, 255, .18);
+  color: var(--ink);
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+}
+.tray .tray-icons { display: inline-flex; opacity: .8; }
+.tray .tray-icons svg { width: 13px; height: 13px; display: block; }
+
+/* --------------------------------------------------------------------------
+   Start menu
+   A single scrollable program list with a search filter, rather than
+   Vista's two-pane layout — the app suite here is eight programs, not a
+   Start Menu's worth, so one column reads better than an empty second one.
+   -------------------------------------------------------------------------- */
+.start-menu {
+  position: absolute;
+  left: var(--s2);
+  bottom: calc(var(--dock-h) + var(--s2));
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  width: min(300px, calc(100% - var(--s4)));
+  max-height: min(460px, calc(100% - var(--dock-h) - var(--s5)));
+  border-radius: 8px;
+  border: 1px solid var(--edge-strong);
   background: var(--surface);
   backdrop-filter: blur(var(--blur)) saturate(170%);
   -webkit-backdrop-filter: blur(var(--blur)) saturate(170%);
-  border: 1px solid var(--edge);
-  border-radius: var(--r-xl);
-  box-shadow: var(--e2);
+  box-shadow: var(--e3);
+  overflow: hidden;
+  animation: startOpen var(--fast) var(--spring) both;
 }
-#dock::-webkit-scrollbar { display: none; }
+.start-menu[hidden] { display: none; }
+@keyframes startOpen {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
 
-.dock-tile {
-  position: relative;
+.sm-header {
   flex: 0 0 auto;
-  width: 46px;
-  padding-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) var(--s4);
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(160deg, #3f6c9c, #163356);
+  color: #eaf5ff;
+}
+[data-theme="light"] .sm-header {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(160deg, #bcdcff, #6ea0d2);
+  color: #0b243f;
+}
+.sm-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   display: grid;
   place-items: center;
-  border-radius: var(--r-md);
-  transition: transform var(--mid) var(--spring);
+  background: rgba(255, 255, 255, .16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3);
 }
-.dock-tile:hover  { transform: translateY(-5px) scale(1.06); }
-.dock-tile:active { transform: translateY(-1px) scale(.97); }
+.sm-avatar svg { width: 16px; height: 16px; }
+.sm-user { font-size: var(--t-sm); font-weight: 700; }
 
-.dock-tile .dk-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  font-family: var(--mono);
-  font-size: var(--t-md);
-  color: #fff;
-  box-shadow: var(--e1), inset 0 1px 0 rgba(255, 255, 255, .18);
+.sm-search-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s4);
+  border-bottom: 1px solid var(--edge);
+  color: var(--ink-faint);
 }
-
-/* Running indicator. Hollow when the window is minimised, solid when open. */
-.dock-tile .dk-dot {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: var(--r-full);
-  background: var(--ink);
-  opacity: 0;
-  transition: opacity var(--fast) var(--ease), width var(--fast) var(--ease),
-              margin-left var(--fast) var(--ease);
-}
-.dock-tile[data-running="true"] .dk-dot { opacity: .85; }
-.dock-tile[data-running="true"][data-focused="true"] .dk-dot {
-  width: 14px;
-  margin-left: -7px;
-  background: var(--accent);
-  opacity: 1;
-}
-.dock-tile[data-running="true"][data-minimised="true"] .dk-dot { opacity: .38; }
-
-/* Tooltip. Pointer devices only — it would be dead weight on touch. */
-.dock-tile .dk-tip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
-  padding: 4px 9px;
-  font-size: var(--t-xs);
-  white-space: nowrap;
+.sm-search-row svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.sm-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--t-sm);
   color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--edge);
-  border-radius: var(--r-xs);
-  box-shadow: var(--e1);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
-@media (hover: hover) and (pointer: fine) {
-  .dock-tile:hover .dk-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+.sm-search::placeholder { color: var(--ink-faint); }
+
+.sm-apps {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s1) 0;
 }
-@media not all and (hover: hover) {
-  .dock-tile .dk-tip { display: none; }
+
+.sm-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  padding: var(--s2) var(--s4);
+  text-align: left;
+  color: var(--ink);
+  transition: background var(--fast) var(--ease);
 }
+.sm-item:hover { background: var(--surface-3); }
+
+.sm-mark {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: var(--e1), inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.sm-mark svg { width: 17px; height: 17px; }
+
+.sm-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sm-name {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sm-tag {
+  font-size: var(--t-2xs);
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sm-empty {
+  padding: var(--s4);
+  font-size: var(--t-sm);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.sm-footer {
+  flex: 0 0 auto;
+  display: flex;
+  border-top: 1px solid var(--edge);
+}
+.sm-foot-btn {
+  flex: 1 1 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--s2);
+  font-size: var(--t-xs);
+  color: var(--ink-dim);
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.sm-foot-btn:hover { background: var(--surface-3); color: var(--ink); }
+.sm-foot-btn svg { width: 13px; height: 13px; }
+.sm-foot-btn:first-child { border-right: 1px solid var(--edge); }
 
 /* --------------------------------------------------------------------------
-   Narrow desktop: the dock spans the width and icons shrink, so the skin
-   stays usable on a phone rather than collapsing.
+   Narrow desktop: labels drop off the taskbar before anything overlaps.
    -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .start-btn .start-label { display: none; }
+  .start-btn { padding-right: var(--s2); }
+  .task-btn .tb-label { display: none; }
+  .task-btn { flex-basis: 40px; }
+  .tray-clock { font-variant-numeric: tabular-nums; }
+}
+
 @media (max-width: 560px) {
-  #dock {
-    left: var(--s2);
-    right: var(--s2);
-    max-width: none;
-    transform: none;
-    justify-content: space-between;
-    border-radius: var(--r-lg);
-  }
-  .dock-tile { width: 40px; }
-  .dock-tile .dk-mark { width: 36px; height: 36px; border-radius: 10px; }
   #desk { grid-template-columns: repeat(auto-fill, 76px); grid-auto-rows: 82px; }
-  #deskstat { bottom: calc(var(--dock-h) + var(--s3)); }
 }

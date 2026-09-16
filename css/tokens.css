@@ -83,39 +83,40 @@
 }
 
 /* ==========================================================================
-   Desktop skin — "Slate"
-   Warm-neutral near-black chrome floating over a wallpaper that carries all
-   the colour. Deliberately not the old blue glass: no gloss, no pinstripes,
-   no gel lozenges. Flat controls, hairline edges, one honest shadow.
+   Desktop skin — "Aero"
+   A late-2000s Windows Vista homage: glass chrome, a graduated blue taskbar,
+   a start orb, drop-shadowed object icons on the desk. The opposite brief
+   from the phone skin below on purpose — this has to read as a workstation,
+   never as a home screen, at a glance.
    ========================================================================== */
 [data-os="desktop"] {
-  --ink:         #eceaf1;
-  --ink-dim:     #a09caa;
-  --ink-faint:   #6f6b7a;
+  /* A Vista taskbar is a slim 42px strip, not a tall floating dock. */
+  --dock-h: 42px;
 
-  --surface:     rgba(24, 23, 28, .74);
+  --ink:         #eaf1f8;
+  --ink-dim:     #a7b8c9;
+  --ink-faint:   #71828f;
+
+  --surface:     rgba(23, 34, 48, .70);
   --surface-2:   rgba(255, 255, 255, .055);
-  --surface-3:   rgba(255, 255, 255, .10);
-  --edge:        rgba(255, 255, 255, .09);
-  --edge-strong: rgba(255, 255, 255, .17);
+  --surface-3:   rgba(255, 255, 255, .11);
+  --edge:        rgba(255, 255, 255, .14);
+  --edge-strong: rgba(255, 255, 255, .30);
 
-  --accent:      #f2a25c;
-  --accent-ink:  #1c1307;
-  --danger:      #ef7089;
-  --positive:    #6fd3c7;
+  --accent:      #3d8eff;
+  --accent-ink:  #071729;
+  --danger:      #e6484f;
+  --positive:    #4fd68c;
 
-  --blur: 26px;
+  --blur: 20px;
 
-  /* A mesh, not a vignette. The chrome above it is near-black, so if the
-     wallpaper stays muted the whole skin collapses into "dark grey with one
-     accent" — the most generic dark theme there is. The colour lives here so
-     the windows can stay quiet. */
+  /* Vista's default Aero wallpaper: a deep blue field with two soft light
+     sources, not the poster-bright mesh the phone skin uses. Muted on
+     purpose — the glass chrome is what should catch the eye, not the desk. */
   --wall:
-    radial-gradient(76% 56% at 6% -4%,  rgba(244, 158, 84, .38), transparent 58%),
-    radial-gradient(66% 54% at 96% 10%, rgba(134, 88, 236, .55), transparent 62%),
-    radial-gradient(92% 66% at 42% 110%, rgba(48, 148, 186, .48), transparent 66%),
-    radial-gradient(50% 40% at 70% 62%, rgba(196, 74, 132, .28), transparent 70%),
-    linear-gradient(166deg, #2b2450 0%, #241d3e 44%, #17142a 100%);
+    radial-gradient(58% 46% at 26% 12%,  rgba(163, 209, 255, .30), transparent 62%),
+    radial-gradient(66% 52% at 82% 82%,  rgba(30, 96, 180, .55), transparent 66%),
+    linear-gradient(165deg, #0d2c54 0%, #0a2140 46%, #071730 100%);
 }
 
 /* ==========================================================================
@@ -150,33 +151,32 @@
 
 /* ==========================================================================
    Light appearance — desktop only, opt-in from Settings.
-
-   The entire cost of light mode is this block. That is the argument for
-   tokens: no component below this line knows the theme exists.
+   Vista shipped both a dark "Graphite/Black" Aero scheme and the brighter
+   default "Aero Blue" — this toggle is that same choice, not a generic
+   light mode. Window glass goes from smoked to bright frosted glass.
    ========================================================================== */
 [data-os="desktop"][data-theme="light"] {
-  --ink:         #1b1a20;
-  --ink-dim:     #5f5c69;
-  --ink-faint:   #8d8996;
+  --ink:         #142230;
+  --ink-dim:     #45596b;
+  --ink-faint:   #72879a;
 
-  --surface:     rgba(252, 251, 253, .78);
-  --surface-2:   rgba(20, 18, 28, .045);
-  --surface-3:   rgba(20, 18, 28, .085);
-  --edge:        rgba(20, 18, 28, .12);
-  --edge-strong: rgba(20, 18, 28, .22);
+  --surface:     rgba(233, 244, 253, .74);
+  --surface-2:   rgba(15, 40, 65, .05);
+  --surface-3:   rgba(15, 40, 65, .10);
+  --edge:        rgba(255, 255, 255, .65);
+  --edge-strong: rgba(255, 255, 255, .9);
 
-  --accent:      #b4611c;
-  --accent-ink:  #fffaf4;
+  --accent:      #1f6fd1;
+  --accent-ink:  #f2f8ff;
 
-  --e1: 0 1px 2px rgba(28, 22, 44, .10);
-  --e2: 0 8px 20px -6px rgba(28, 22, 44, .18), 0 2px 6px rgba(28, 22, 44, .08);
-  --e3: 0 28px 64px -16px rgba(28, 22, 44, .26), 0 4px 12px rgba(28, 22, 44, .10);
+  --e1: 0 1px 2px rgba(10, 30, 55, .16);
+  --e2: 0 8px 20px -6px rgba(10, 30, 55, .28), 0 2px 6px rgba(10, 30, 55, .14);
+  --e3: 0 28px 64px -16px rgba(10, 30, 55, .38), 0 4px 12px rgba(10, 30, 55, .18);
 
   --wall:
-    radial-gradient(78% 58% at 12% 4%,  rgba(255, 214, 170, .85), transparent 62%),
-    radial-gradient(64% 52% at 88% 18%, rgba(206, 194, 255, .80), transparent 66%),
-    radial-gradient(90% 62% at 50% 106%, rgba(176, 224, 232, .75), transparent 70%),
-    linear-gradient(168deg, #f4eee9 0%, #eae6f2 45%, #e2e6ee 100%);
+    radial-gradient(64% 50% at 24% 8%,  rgba(255, 255, 255, .85), transparent 60%),
+    radial-gradient(70% 56% at 78% 88%, rgba(120, 180, 240, .65), transparent 66%),
+    linear-gradient(170deg, #cfe8ff 0%, #9cc7ec 46%, #6fa2d6 100%);
 }
 
 /* The terminal keeps its dark console in light mode — a light shell does not

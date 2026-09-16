@@ -7,10 +7,10 @@
    [data-platform="linux"] block to repaint each app; none of that is here.
    ========================================================================== */
 
-/* App tiles all carry an icon at a fixed proportion of the tile, so a 40px
-   dock tile and a 54px launcher tile read as the same mark at two sizes. */
+/* App tiles all carry an icon at a fixed proportion of the tile, so tiles at
+   different sizes still read as the same mark. The desktop's taskbar and
+   Start menu size their own icons explicitly instead — see desktop.css. */
 .di-mark svg,
-.dk-mark svg,
 .ic-mark svg,
 .pk-mark svg,
 .rc-mark svg {

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   desktop.js — the "Slate" shell and its window manager.
+   desktop.js — the "Aero" shell and its window manager.
 
    Notes on what changed from the original window manager:
 
@@ -13,13 +13,14 @@
      · The three-window cap is gone. It existed because windows were sized for
        a 400px-wide phone; the shell is responsive now, so the limit was an
        arbitrary refusal on a screen with room for eight.
-     · The dock absorbed the taskbar. One control per app that shows whether it
-       is running, focused or minimised, instead of two rows doing half a job
-       each.
+     · The taskbar is a taskbar again, not a dock wearing its hat: a Start
+       orb opens a launcher menu, Quick Launch is a permanent one-click
+       shortcut per app, and the task list only ever shows a button for a
+       window that is actually open — closing the last one empties it.
    ========================================================================== */
 
-import { h, fill, on, qs, rafThrottle, clamp } from '../core/dom.js';
-import { subscribe, system, uptimeShort } from '../core/state.js';
+import { h, fill, on, qs, rafThrottle, clamp, pad2 } from '../core/dom.js';
+import { subscribe, emit, system, uptimeShort } from '../core/state.js';
 import { icon, folderGlyph, fileGlyph } from '../ui/icons.js';
 import { toast } from '../ui/toast.js';
 import { APPS, DOCK_ORDER, appMeta, appInstance } from '../apps/registry.js';
@@ -34,7 +35,6 @@ export function createDesktopShell() {
   const desk = qs('#desk');
   const layer = qs('#windows');
   const dock = qs('#dock');
-  const deskStat = qs('#deskstat');
   const snapHint = h('div', { id: 'snap' });
   layer.appendChild(snapHint);
 
@@ -50,13 +50,15 @@ export function createDesktopShell() {
   function measure() {
     const rect = layer.getBoundingClientRect();
     bounds = { w: rect.width, h: rect.height };
-    dockHeight = dock.offsetHeight + 20;
+    // The taskbar is flush with the bottom edge now, not a floating dock with
+    // clearance around it — the exclusion zone is exactly its own height.
+    dockHeight = dock.offsetHeight;
   }
 
   const observer = new ResizeObserver(() => {
     measure();
     for (const win of windows.values()) {
-      if (win.maximised) applyRect(win, { x: 0, y: 0, w: bounds.w, h: bounds.h });
+      if (win.maximised) applyRect(win, { x: 0, y: 0, w: bounds.w, h: bounds.h - dockHeight });
       else place(win, win.x, win.y);
     }
   });
@@ -90,7 +92,7 @@ export function createDesktopShell() {
     const y = clientY - rect.top;
     const usable = bounds.h - dockHeight;
 
-    if (y < EDGE) return { id: 'max', x: 0, y: 0, w: bounds.w, h: bounds.h };
+    if (y < EDGE) return { id: 'max', x: 0, y: 0, w: bounds.w, h: usable };
     if (x < EDGE) return { id: 'left', x: 0, y: 0, w: bounds.w / 2, h: usable };
     if (x > bounds.w - EDGE) {
       return { id: 'right', x: bounds.w / 2, y: 0, w: bounds.w / 2, h: usable };
@@ -265,7 +267,9 @@ export function createDesktopShell() {
       win.restore = { x: win.x, y: win.y, w: win.w, h: win.h };
       win.maximised = true;
       win.el.classList.add('maximised');
-      applyRect(win, { x: 0, y: 0, w: bounds.w, h: bounds.h });
+      // Real Windows never lets a maximised window run under the taskbar —
+      // the work area stops at its top edge.
+      applyRect(win, { x: 0, y: 0, w: bounds.w, h: bounds.h - dockHeight });
       fill(win.maximiseButton, icon('restore'));
       win.maximiseButton.title = 'Restore';
     }
@@ -387,36 +391,121 @@ export function createDesktopShell() {
     on(win.grip, 'pointercancel', end);
   }
 
-  /* ----------------------------------------------------------------- dock */
+  /* -------------------------------------------------------------- taskbar
+
+     Not a dock: Vista's taskbar draws a permanent one-click shortcut per app
+     (Quick Launch, left of the divider) and a *separate* button per window
+     that is actually open (the task list) — a real taskbar has no button for
+     a program that isn't running. The tray on the right shows the clock; the
+     Start orb on the left opens the launcher menu. */
+
+  let startOpen = false;
+
+  const trayClock = h('span.tray-clock');
+  const trayWrap = h('div.tray', h('span.tray-icons', icon('wifi', { size: 13 })), trayClock);
+
+  function trayTooltip() {
+    const load = (0.04 + (new Date().getSeconds() % 7) / 100).toFixed(2);
+    return `${system.host} · up ${uptimeShort()} · load ${load}`;
+  }
 
   function renderDock() {
-    fill(dock, DOCK_ORDER.map((id) => {
+    const quick = DOCK_ORDER.map((id) => {
       const meta = appMeta(id);
       if (!meta) return null;
-      const win = windows.get(id);
+      return h('button.ql-btn', {
+        'aria-label': `Launch ${meta.name}`,
+        title: meta.name,
+        onclick: () => open(id),
+      }, h('span.ql-mark', { style: { background: meta.tint } }, icon(meta.icon)));
+    });
 
-      return h('button.dock-tile', {
-        'aria-label': meta.name,
-        dataset: {
-          app: id,
-          running: String(Boolean(win)),
-          focused: String(focusedId === id),
-          minimised: String(Boolean(win?.minimised)),
-        },
-        onclick: () => {
-          // One control, three behaviours: launch, focus, or minimise the
-          // window you are already looking at.
-          if (!win) open(id);
-          else if (win.minimised || focusedId !== id) focus(id);
-          else minimise(id);
-        },
+    const tasks = [...windows.values()].map((win) => h('button.task-btn', {
+      dataset: {
+        app: win.id,
+        focused: String(focusedId === win.id),
+        minimised: String(win.minimised),
       },
-        h('span.dk-tip', meta.name),
-        h('span.dk-mark', { style: { background: meta.tint } }, icon(meta.icon)),
-        h('span.dk-dot'),
-      );
-    }));
+      onclick: () => {
+        if (win.minimised || focusedId !== win.id) focus(win.id);
+        else minimise(win.id);
+      },
+    },
+      h('span.tb-mark', { style: { background: win.meta.tint } }, icon(win.meta.icon)),
+      h('span.tb-label', win.meta.name),
+    ));
+
+    fill(dock,
+      h('button.start-btn', {
+        'aria-label': 'Start',
+        'aria-haspopup': 'menu',
+        'aria-expanded': String(startOpen),
+        onclick: toggleStart,
+      }, h('span.start-orb', icon('terminal')), h('span.start-label', 'Start')),
+      h('div.ql-group', quick),
+      h('div.tb-sep', { 'aria-hidden': 'true' }),
+      h('div.task-list', tasks),
+      trayWrap,
+    );
   }
+
+  /* ---------------------------------------------------------- start menu */
+
+  const startSearch = h('input.sm-search', {
+    type: 'text',
+    placeholder: 'Search programs',
+    'aria-label': 'Search programs',
+  });
+  const startApps = h('div.sm-apps');
+  const startMenu = h('div.start-menu', { hidden: true, role: 'menu', 'aria-label': 'Start menu' },
+    h('div.sm-header', h('span.sm-avatar', icon('terminal')), h('span.sm-user', system.host)),
+    h('div.sm-search-row', icon('search', { size: 13 }), startSearch),
+    startApps,
+    h('div.sm-footer',
+      h('button.sm-foot-btn', { onclick: () => { emit('system:switch'); closeStart(); } },
+        icon('swap'), 'Switch interface'),
+      h('button.sm-foot-btn', { onclick: () => { emit('system:restart'); closeStart(); } },
+        icon('rotate'), 'Restart'),
+    ),
+  );
+  scene.appendChild(startMenu);
+
+  function renderStartApps(query) {
+    const q = query.trim().toLowerCase();
+    const matches = APPS.filter((meta) => !q || meta.name.toLowerCase().includes(q));
+    fill(startApps, matches.length
+      ? matches.map((meta) => h('button.sm-item', { role: 'menuitem', onclick: () => { open(meta.id); closeStart(); } },
+        h('span.sm-mark', { style: { background: meta.tint } }, icon(meta.icon)),
+        h('span.sm-text', h('span.sm-name', meta.name), h('span.sm-tag', meta.tagline)),
+      ))
+      : h('p.sm-empty', 'No programs found.'));
+  }
+
+  function openStart() {
+    startOpen = true;
+    startMenu.hidden = false;
+    startMenu.querySelector('.sm-user').textContent = system.host;
+    startSearch.value = '';
+    renderStartApps('');
+    renderDock();
+    requestAnimationFrame(() => startSearch.focus());
+  }
+
+  function closeStart() {
+    if (!startOpen) return;
+    startOpen = false;
+    startMenu.hidden = true;
+    renderDock();
+  }
+
+  function toggleStart() {
+    if (startOpen) closeStart(); else openStart();
+  }
+
+  on(startSearch, 'input', () => renderStartApps(startSearch.value));
+  on(document, 'pointerdown', (event) => {
+    if (startOpen && !event.target.closest('.start-menu, .start-btn')) closeStart();
+  });
 
   /* ------------------------------------------------------------ desk icons */
 
@@ -486,6 +575,10 @@ export function createDesktopShell() {
   // Keyboard shortcuts a desktop is expected to have.
   const onKey = (event) => {
     if (!scene.classList.contains('on')) return;
+    if (event.key === 'Escape' && startOpen) {
+      closeStart();
+      return;
+    }
     const meta = event.metaKey || event.ctrlKey;
     if (meta && event.key.toLowerCase() === 'w' && focusedId) {
       event.preventDefault();
@@ -500,8 +593,11 @@ export function createDesktopShell() {
 
   function tickStat() {
     if (!scene.classList.contains('on')) return;
-    const load = (0.04 + (new Date().getSeconds() % 7) / 100).toFixed(2);
-    deskStat.textContent = `${system.host} · up ${uptimeShort()} · load ${load}`;
+    const now = new Date();
+    const hour24 = now.getHours();
+    const hour12 = hour24 % 12 || 12;
+    trayClock.textContent = `${hour12}:${pad2(now.getMinutes())} ${hour24 >= 12 ? 'PM' : 'AM'}`;
+    trayWrap.title = trayTooltip();
   }
   const statTimer = setInterval(tickStat, 1000);
 
@@ -523,11 +619,13 @@ export function createDesktopShell() {
     },
     /** Show the desktop by minimising everything, rather than losing state. */
     showDesk() {
+      closeStart();
       for (const id of windows.keys()) minimise(id);
     },
     hasWindows: () => windows.size > 0,
     /** Tear down session state without unbinding the shell itself. */
     reset() {
+      closeStart();
       closeAll();
       zTop = 10;
     },

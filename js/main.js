@@ -47,7 +47,9 @@ function showScene(name) {
   }
 
   const chrome = name === 'desktop' || name === 'phone';
-  menubar[chrome ? 'show' : 'hide']();
+  // The desktop skin is Vista-style: clock, network and battery live in the
+  // taskbar tray, not a macOS-style menu bar strip. Only the phone keeps one.
+  menubar[name === 'phone' ? 'show' : 'hide']();
   navbar.toggleAttribute('hidden', !(chrome && system.os === 'phone'));
 }
 
