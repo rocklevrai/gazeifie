@@ -20,7 +20,7 @@
 
 import { h, fill, on, qs, rafThrottle, clamp } from '../core/dom.js';
 import { subscribe, system, uptimeShort } from '../core/state.js';
-import { icon } from '../ui/icons.js';
+import { icon, folderGlyph, fileGlyph } from '../ui/icons.js';
 import { toast } from '../ui/toast.js';
 import { APPS, DOCK_ORDER, appMeta, appInstance } from '../apps/registry.js';
 import { homePath } from '../fs/filesystem.js';
@@ -431,13 +431,17 @@ export function createDesktopShell() {
     fill(desk, DESK_ITEMS.map((item) => {
       const meta = item.kind === 'app' ? appMeta(item.id) : null;
       const label = meta ? meta.name : item.name;
-      const glyph = meta ? meta.icon : item.kind === 'dir' ? 'folder' : 'file';
-      const tint = meta ? meta.tint
-        : item.kind === 'dir'
-          ? 'linear-gradient(150deg,#f0b556,#c8842a)'
-          : 'linear-gradient(150deg,#dfe4ec,#b3bcc9)';
+
+      // Apps sit on the desk as small program tiles; a folder or a file is
+      // rendered as the object itself, in its own fixed colours, with no
+      // tile behind it — that's the difference between a desktop and a
+      // phone's home screen.
+      const mark = meta
+        ? h('span.di-mark.di-mark--app', { style: { background: meta.tint } }, icon(meta.icon))
+        : h('span.di-mark.di-mark--object', item.kind === 'dir' ? folderGlyph() : fileGlyph());
 
       return h('button.desk-icon', {
+        dataset: { kind: item.kind },
         onclick: () => {
           if (item.kind === 'app') return open(item.id);
           open('files');
@@ -447,9 +451,7 @@ export function createDesktopShell() {
           refreshTitle('files');
         },
       },
-        h('span.di-mark', {
-          style: { background: tint, color: item.kind === 'file' ? '#3d4655' : '#fff' },
-        }, icon(glyph)),
+        mark,
         h('span.di-label', label),
       );
     }));

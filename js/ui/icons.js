@@ -66,3 +66,53 @@ export function icon(name, opts = {}) {
 }
 
 export const hasIcon = (name) => name in PATHS;
+
+/* --------------------------------------------------------------------------
+   Desk glyphs — flat, fixed-colour pictograms for the desktop surface.
+
+   The stroked set above is deliberately monochrome (`currentColor`) because
+   it sits on tinted plates in the dock and window chrome. A folder or a
+   document on a desk isn't a UI control, it's an object — real desktops
+   render it as one, in its own colours, with no coloured card behind it.
+   That's what tells the desk apart from a phone's home screen at a glance.
+   ========================================================================== */
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+  return el;
+}
+
+/** A manila folder: recessed back tab, lighter front panel. */
+export function folderGlyph() {
+  const svg = svgEl('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'desk-glyph desk-glyph--folder' });
+  svg.append(
+    svgEl('path', {
+      d: 'M2 6a2 2 0 0 1 2-2h5.2l2 2H20a2 2 0 0 1 2 2v2H2z',
+      fill: '#d98f31',
+    }),
+    svgEl('path', {
+      d: 'M2 8h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z',
+      fill: '#ffc465',
+    }),
+  );
+  return svg;
+}
+
+/** A document: page with a folded corner and a few text rules. */
+export function fileGlyph() {
+  const svg = svgEl('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'desk-glyph desk-glyph--file' });
+  svg.append(
+    svgEl('path', {
+      d: 'M6 2h9l5 5v13.5A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5v-17A1.5 1.5 0 0 1 5.5 2z',
+      fill: '#eef1f7',
+      stroke: '#aab3c2',
+      'stroke-width': '1',
+    }),
+    svgEl('path', { d: 'M15 2.3V6.5a1.5 1.5 0 0 0 1.5 1.5h4.2z', fill: '#d5dce6' }),
+    svgEl('line', { x1: 7.3, y1: 13, x2: 16.7, y2: 13, stroke: '#b3bcc9', 'stroke-width': 1.4, 'stroke-linecap': 'round' }),
+    svgEl('line', { x1: 7.3, y1: 16.2, x2: 16.7, y2: 16.2, stroke: '#b3bcc9', 'stroke-width': 1.4, 'stroke-linecap': 'round' }),
+    svgEl('line', { x1: 7.3, y1: 19.4, x2: 13.5, y2: 19.4, stroke: '#b3bcc9', 'stroke-width': 1.4, 'stroke-linecap': 'round' }),
+  );
+  return svg;
+}

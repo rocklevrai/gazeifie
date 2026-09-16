@@ -38,27 +38,47 @@
   align-items: center;
   gap: var(--s2);
   padding: var(--s2) var(--s1);
-  border-radius: var(--r-md);
+  border-radius: var(--r-xs);
   color: #fff;
   transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
 }
-.desk-icon:hover { background: rgba(255, 255, 255, .10); }
-.desk-icon:active { transform: scale(.94); }
+/* A hairline rectangle, not a filled pill — a selection marquee reads as
+   "desktop file browser," a glowing rounded blob reads as "app icon press." */
+.desk-icon:hover { background: rgba(255, 255, 255, .08); outline: 1px solid rgba(255, 255, 255, .18); outline-offset: -1px; }
+.desk-icon:active { background: rgba(120, 170, 255, .22); outline-color: rgba(150, 190, 255, .5); }
 
 [data-theme="light"] .desk-icon { color: #221f2b; }
-[data-theme="light"] .desk-icon:hover { background: rgba(20, 18, 28, .08); }
+[data-theme="light"] .desk-icon:hover { background: rgba(20, 18, 28, .06); outline-color: rgba(20, 18, 28, .16); }
+[data-theme="light"] .desk-icon:active { background: rgba(60, 120, 220, .16); outline-color: rgba(60, 120, 220, .4); }
 
 .desk-icon .di-mark {
   width: 46px;
   height: 46px;
-  border-radius: 13px;
   display: grid;
   place-items: center;
-  font-family: var(--mono);
-  font-size: var(--t-lg);
-  color: #fff;
-  box-shadow: var(--e1), inset 0 1px 0 rgba(255, 255, 255, .18);
 }
+
+/* A folder or a file is the object itself: its own fixed colours, drawn flat
+   on the desk, with a soft cast shadow instead of sitting on a tinted card. */
+.desk-icon .di-mark--object {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+}
+.desk-icon .di-mark--object .desk-glyph { display: block; }
+.desk-icon .di-mark--object .desk-glyph--folder { width: 44px; height: auto; }
+.desk-icon .di-mark--object .desk-glyph--file { width: 30px; height: auto; }
+
+/* App tiles keep a plate, but a square, matte one — no 17px superellipse
+   radius, no glossy inset highlight. Those two cues are what make an icon
+   read as "phone home screen" at a glance, so a desktop icon gets neither. */
+.desk-icon .di-mark--app {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, .25);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+}
+.desk-icon .di-mark--app svg { width: 22px; height: 22px; }
 
 .desk-icon .di-label {
   font-size: var(--t-xs);
