@@ -31,7 +31,7 @@ bundler and no dependencies.
 ```
 index.html                 60-line skeleton; all content is built in JS
 manifest.webmanifest       home-screen install
-icon.svg, apple-touch-icon.png
+icon-512.png, icon-192.png, apple-touch-icon.png
 
 css/
   tokens.css               the whole design system: type, space, radius,
